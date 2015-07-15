@@ -8,6 +8,7 @@ Description: The main program of automatic counting of cells
 import cv2
 import numpy as np
 import sys
+import common as com
 from db import allidb
 from segmentation import morph
 
@@ -46,24 +47,35 @@ def count_cells(image, viz=False, points=None):
                                param1=50,param2=30,minRadius=5,maxRadius=20)
     assert circles is not None
     circles = np.uint16(np.around(circles))
+    if not viz:
+        return circles.shape[1]
 
-    if viz:
-        cv2.imshow("Original", inp)
-        for i in circles[0,:]:
-            # draw the outer circle
-            cv2.circle(inp,(i[0],i[1]),i[2],(0,255,0),2)
-            # draw the center of the circle
-            cv2.circle(inp,(i[0],i[1]),2,(0,0,255),3)
-        # show ground true data
+    detected_points = [(i[0], i[1]) for i in circles[0,:]]
+    cv2.imshow("Original", inp)
+    for i in circles[0,:]:
+        # draw the outer circle
+        cv2.circle(inp,(i[0],i[1]),10,(0,255,0),2)
+        # draw the center of the circle
+        cv2.circle(inp,(i[0],i[1]),2,(0,0,255),3)
+    # show ground true data
 
-        if points:
-            allidb.visualize_loc(image, points)
+    if points:
+        allidb.visualize_loc(image, points)
+        points = [(allidb.ratio * x, allidb.ratio * y) for (x, y) in points]
+        cordect_pts = 0
+        for p in points:
+            cands = [cir for cir in detected_points if com.euclid(p, cir) < allidb.tol]
+            if len(cands) == 0:
+                continue
+            cordect_pts += 1
+            cands = sorted(cands, lambda x: com.euclid(p, x))
+            detected_points.remove(cands[0])
+        print "The number of correctly detected points: ", cordect_pts
 
-        cv2.imshow('detected circles',inp)
-        cv2.imshow("After", thres)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
+    cv2.imshow('detected circles',inp)
+    cv2.imshow("After", thres)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     return circles.shape[1]
 
 def help_manual():
