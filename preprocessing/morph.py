@@ -26,24 +26,26 @@ def erode(img, kernel, iters=1):
     return cv2.erode(img, kernel, iterations=iters)
 
 
-def close(img, kernel, iters=1):
+def close(img, kernel_dilation, kernel_erosion=None, iters=1):
     """ closing operation """
     assert type(img) is np.ndarray and img.size > 0
-    assert type(kernel) is np.ndarray and kernel.size > 0
+    assert type(kernel_dilation) is np.ndarray and kernel_dilation.size > 0
 
-    result = cv2.dilate(img, kernel, iterations=iters)
+    result = cv2.dilate(img, kernel_dilation, iterations=iters)
+    if kernel_erosion is None:
+        kernel_erosion = kernel_dilation
+    return cv2.erode(result, kernel_erosion, iterations=iters)
 
-    return cv2.erode(result, kernel, iterations=iters)
 
-
-def opening(img, kernel, iters=1):
+def opening(img, kernel_erosion, kernel_dilation=None, iters=1):
     """ opening operation """
     assert type(img) is np.ndarray and img.size > 0
-    assert type(kernel) is np.ndarray and kernel.size > 0
+    assert type(kernel_erosion) is np.ndarray and kernel_erosion.size > 0
 
-    result = cv2.erode(img, kernel, iterations=iters)
-
-    return cv2.dilate(result, kernel, iterations=iters)
+    result = cv2.erode(img, kernel_erosion, iterations=iters)
+    if kernel_erosion is None:
+        kernel_dilation = kernel_erosion
+    return cv2.dilate(result, kernel_dilation, iterations=iters)
 
 
 def hitmiss(img, kernel, iters):
