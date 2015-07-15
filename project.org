@@ -1,0 +1,4 @@
+* Programming notes
+  Preprocessing class and Segmentation class have a same architecture. Hence,
+  we can merge them into just one class: Stage.
+
