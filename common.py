@@ -21,7 +21,7 @@ def drawHist(image, channel):
     assert isinstance(image, basestring)
     if channel == 1:
         im = cv2.imread(image, 0)
-        plt.hist(im.ravel(), 256, [0,256]); plt.show()
+        plt.hist(im.ravel(), 256, [0, 256]); plt.show()
     elif channel == 3:
         im = cv2.imread(image, 1)
         color = ("b", "g", "r")
@@ -30,3 +30,14 @@ def drawHist(image, channel):
             plt.plot(histr, color=col)
             plt.xlim([0, 256])
         plt.show()
+
+
+def flatten(lst):
+    """ flatten a list of lists """
+    return sum(lst, [])
+
+
+def nearest_point(value, point_lst):
+    """ Find the nearest point in points list """
+    dists = sorted(point_lst, lambda x, p=value: np.abs(euclid(x, p)))
+    return dists[0], np.abs(euclid(dists[0], value))

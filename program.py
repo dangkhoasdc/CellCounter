@@ -36,7 +36,7 @@ def count_cells(image, viz=False, corpoints=None):
     """
 
     inp = cv2.imread(image, 1)
-    com.drawHist(image, 1)
+    # com.drawHist(image, 1)
     com.drawHist(image, 3)
     assert inp.size > 0
     inp = cv2.resize(inp, (432, 324))
@@ -80,7 +80,7 @@ def count_cells(image, viz=False, corpoints=None):
         cordect_pts = 0
         for p in corpoints:
             cands = [cir for cir in detected_points
-                     if com.euclid(p, cir) < allidb.tol]
+                     if abs(com.euclid(p, cir)) <= allidb.tol]
             if len(cands) == 0:
                 continue
             cordect_pts += 1

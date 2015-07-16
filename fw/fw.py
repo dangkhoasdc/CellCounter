@@ -5,7 +5,7 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Stage Class Definition
 """
-
+from ... import common as com
 
 class Stage(object):
     """ Stage Class """
@@ -42,15 +42,12 @@ class Framework(object):
     def __init__(self, preprocess_stage,
                  segmentation_stage,
                  extraction,
-                 classification,
-                 training_files=None, testing_files=None):
+                 classification):
         """init"""
         self._preprocess = preprocess_stage
         self._segmentation = segmentation_stage
         self._classification = classification
         self._extraction = extraction
-        self.training_data = training_files
-        self.testing_data = testing_files
         self.preprocess_method = None
         self.extract_method = None
 
@@ -64,13 +61,19 @@ class Framework(object):
         return self._segmentation.run(image)
 
     def train(self, image_lst, loc_lst):
+        assert type(image_lst) is list
+        assert type(loc_lst) is list
+
         print "Training Phase"
         # Preprocessing
         images = [self.preprocess(im) for im in image_lst]
         # Segmentation
-        images = [self.segment(im) for im in images]
+        segments = [self.segment(im) for im in images]
         # Cropping from segmented image
+        assert len(segments) != 0
 
+        for im, cords in zip(segments, loc_lst):
+            print "dummy"
 
 
 
