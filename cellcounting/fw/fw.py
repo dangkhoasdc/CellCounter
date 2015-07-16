@@ -5,7 +5,10 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Stage Class Definition
 """
-from ... import common as com
+from .. import common as com
+from ..segmentation.contour import Contour
+from ..db import allidb
+
 
 class Stage(object):
     """ Stage Class """
@@ -71,9 +74,14 @@ class Framework(object):
         segments = [self.segment(im) for im in images]
         # Cropping from segmented image
         assert len(segments) != 0
+        assert type(segments[0][0]) is Contour
 
-        for im, cords in zip(segments, loc_lst):
-            print "dummy"
+        for segs, cords in zip(segments, loc_lst):
+            for s in segs:
+                value, point = com.nearest_point(s.center, cords)
+                if value <= allidb.tol:
+                    print "dummy"
+
 
     def __str__(self):
         return "\n".join(map(str, [
