@@ -75,8 +75,6 @@ class Framework(object):
         for im, cords in zip(segments, loc_lst):
             print "dummy"
 
-
-
     def __str__(self):
         return "\n".join(map(str, [
             self._preprocess,

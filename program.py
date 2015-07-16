@@ -37,7 +37,6 @@ def count_cells(image, viz=False, corpoints=None):
 
     inp = cv2.imread(image, 1)
     # com.drawHist(image, 1)
-    com.drawHist(image, 3)
     assert inp.size > 0
     inp = cv2.resize(inp, (432, 324))
     im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
@@ -66,6 +65,8 @@ def count_cells(image, viz=False, corpoints=None):
 
     detected_points = [(i[0], i[1]) for i in circles[0, :]]
     cv2.imshow("Original", inp)
+    com.drawHist(image, 3)
+    com.drawHist(image, 1)
     for i in circles[0, :]:
         # draw the outer circle
         cv2.circle(inp, (i[0], i[1]), 10, (0, 255, 0), 2)
