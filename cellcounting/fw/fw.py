@@ -5,15 +5,15 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Stage Class Definition
 """
+from .absframework import AbsFramework
 from .. import common as com
 from ..segmentation.contour import Contour
 from ..db import allidb
-from sklearn.externals import joblib
 import cv2
 import numpy as np
 
 
-class Framework(object):
+class Framework(object, AbsFramework):
     """Main Framework"""
     def __init__(self, window_size,
                  preprocess_stage,
@@ -21,35 +21,25 @@ class Framework(object):
                  extraction,
                  classification):
         """init"""
+        super(Framework, self).__init__()
         self._window_size = window_size
         self._preprocess = preprocess_stage
         self._segmentation = segmentation_stage
         self._classification = classification
         self._extraction = extraction
-        self.preprocess_method = None
-        self.extract_method = None
         self._model = None
 
     def preprocess(self, image):
         return self._preprocess.run(image)
 
-    def extract_features(self, image):
+    def extract(self, image):
         return self._extraction.run(image)
 
     def segment(self, image):
         return self._segmentation.run(image)
 
-    def train(self, samples, labels, save):
-        assert type(samples) is np.ndarray
-        assert type(labels) is np.ndarray
-        assert samples.shape[0] == labels.shape[1]
-        model = self._classification.train_auto(samples, labels)
-        self._model = model
-        if save:
-            joblib.dump(model, "model")
-        return model
-
-    def run_train(self, image_lst, loc_lst, save):
+    def train(self, image_lst, loc_lst, save):
+        """ implement training stage """
         assert self._window_size % 2 == 1
         assert type(image_lst) is list
         assert type(loc_lst) is list
@@ -74,7 +64,7 @@ class Framework(object):
                 value, point = com.nearest_point(s.center, cords)
                 if value <= allidb.tol:
                     label = 1
-                    cords.remove(value)
+                    cords.remove(point)
                 else:
                     label = 0
                 cropped_im = original_im[im_idx][s.center[0] - wd_sz: s.center[0] - wd_sz + 1,
@@ -82,13 +72,14 @@ class Framework(object):
                 training_samples[idx] = self.extract_features(cropped_im)
                 training_labels[idx] = label
                 idx += 1
-        self.train(training_samples, training_labels, save)
 
-    def predict(self, image):
-        """ predict if an image is a ALL cell or not """
-        return self._model.predict(image)
+        assert type(training_samples) is np.ndarray
+        assert type(training_labels) is np.ndarray
+        assert training_samples.shape[0] == training_labels.shape[1]
 
-    def run_test(self, image, loc_list):
+        self._classification.train_auto(training_samples, training_labels, save)
+
+    def test(self, image, loc_list):
         """ test an image """
         num_cells = 0
         correct_cells = 0
@@ -107,7 +98,6 @@ class Framework(object):
                     correct_cells += 1
                 num_cells += 1
         return num_cells
-
 
     def __str__(self):
         return "\n".join(map(str, [
