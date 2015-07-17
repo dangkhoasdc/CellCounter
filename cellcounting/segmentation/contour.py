@@ -41,7 +41,7 @@ class Contour(object):
                 (self.topleft[1] + self.bottomright[1]) / 2)
 
 
-def findContour(image):
+def findContours(image):
     """ find all contours in an image """
     conts, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     segments = [Contour(points_lst) for points_lst in conts]
