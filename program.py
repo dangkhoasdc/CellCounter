@@ -13,20 +13,6 @@ from db import allidb
 from preprocessing import morph
 
 
-def preprocessing(img):
-    """
-    This is the preprocessing stage in the framework.
-    It will remove noise, enhance the quality of
-    an input image.
-
-    Args:
-        img (ndarray): an input image
-    Return:
-        img (ndarray): the result image
-    """
-    yield
-
-
 def count_cells(image, viz=False, corpoints=None):
     """ Count of cells in an input image
         Args:

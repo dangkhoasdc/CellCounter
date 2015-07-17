@@ -8,45 +8,19 @@ Description: Stage Class Definition
 from .. import common as com
 from ..segmentation.contour import Contour
 from ..db import allidb
-
-
-class Stage(object):
-    """ Stage Class """
-    _default_params = dict()
-
-    def __init__(self, name, params=None):
-        self.name = name
-        if params is None:
-            self.params = self._default_params
-        elif hasattr(self, "_default_params"):
-            self.make_default_params(self.params)
-        else:
-            raise NotImplementedError("Subclass should define _default_params")
-
-    def __str__(self):
-        txt = "\n".join([k+":"+str(v) for k, v in self.params.items()])
-        return self.name + "\n" + txt
-
-    def run(self, image):
-        """ run preprocessing stage """
-        raise NotImplementedError("Subclass should be implement this")
-
-    def make_default_params(self, params):
-        """ make a default value for params """
-        assert len(self._default_params) >= len(params)
-        self.params = params
-        for def_key in self._default_params:
-            if def_key not in self.params:
-                self.params[def_key] = self._default_params[def_key]
+from sklearn.externals import joblib
+import cv2
 
 
 class Framework(object):
     """Main Framework"""
-    def __init__(self, preprocess_stage,
+    def __init__(self, window_size=11,
+                 preprocess_stage,
                  segmentation_stage,
                  extraction,
                  classification):
         """init"""
+        self._window_size = window_size
         self._preprocess = preprocess_stage
         self._segmentation = segmentation_stage
         self._classification = classification
@@ -63,25 +37,52 @@ class Framework(object):
     def segment(self, image):
         return self._segmentation.run(image)
 
-    def train(self, image_lst, loc_lst):
+    def train(self, samples, labels, save):
+        assert type(samples) is np.ndarray
+        assert type(labels) is np.ndarray
+        assert samples.shape[0] == labels.shape[1]
+        model = self._classification.train_auto(samples, labels)
+        if save:
+            joblib.dump(model, "model")
+
+    def run_train(self, image_lst, loc_lst, save):
+        assert self.window_size % 2 == 1
         assert type(image_lst) is list
         assert type(loc_lst) is list
 
         print "Training Phase"
+        wd_sz = (self._window_size - 1) / 2
         # Preprocessing
-        images = [self.preprocess(im) for im in image_lst]
+        original_im = [cv2.imread(im) for im in image_lst]
+        images = [self.preprocess(im) for im in original_im]
         # Segmentation
         segments = [self.segment(im) for im in images]
-        # Cropping from segmented image
         assert len(segments) != 0
-        assert type(segments[0][0]) is Contour
-
-        for segs, cords in zip(segments, loc_lst):
+        # Cropping from segmented image
+        assert type(segments[0]) is Contour
+        num_samples = len(com.flatten(segments))
+        feature_size = len(self._extraction)
+        training_samples = np.empty((num_samples, feature_size), dtype=float)
+        training_labels = np.empty((1, num_samples), dtype=int)
+        idx = 0
+        for im_idx, (segs, cords) in enumerate(zip(segments, loc_lst)):
             for s in segs:
                 value, point = com.nearest_point(s.center, cords)
                 if value <= allidb.tol:
-                    print "dummy"
+                    label = 1
+                    cords.remove(value)
+                else:
+                    label = 0
+                cropped_im = original_im[im_idx][s.center[0] - wd_sz: s.center[0] - wd_sz +1,
+                                                 s.center[1] - wd_sz: s.center[1] + wd_sz +1]
+                training_samples[idx] = self.extract_features(cropped_im)
+                training_labels[idx] = label
+                idx += 1
+        self.train(training_samples, training_labels)
 
+    def run_test(self, image, loc_list):
+        """ test an image """
+        yield
 
     def __str__(self):
         return "\n".join(map(str, [
