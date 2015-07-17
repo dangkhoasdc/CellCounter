@@ -8,9 +8,9 @@ Description: The main program of automatic counting of cells
 import cv2
 import numpy as np
 import sys
-import common as com
-from db import allidb
-from preprocessing import morph
+from cellcounting.preprocessing import morph
+from cellcounting.db import allidb
+from cellcounting import common as com
 
 
 def count_cells(image, viz=False, corpoints=None):
