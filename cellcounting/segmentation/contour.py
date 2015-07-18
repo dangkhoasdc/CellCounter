@@ -41,6 +41,15 @@ class Contour(object):
                 (self.topleft[1] + self.bottomright[1]) / 2)
 
 
+    @property
+    def width(self):
+        """ return the width of the rectangle bounding the contour """
+        return abs(self.bottomright[0] - self.lefttop[0])
+
+    @property
+    def height(self):
+        """ return the width of the rectangle bounding the contour """
+        return abs(self.bottomright[1] - self.lefttop[1])
 def findContours(image):
     """ find all contours in an image """
     conts, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
