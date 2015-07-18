@@ -16,7 +16,7 @@ class Stage(object):
         if params is None:
             self.params = self._default_params
         elif hasattr(self, "_default_params"):
-            self.make_default_params(self.params)
+            self.make_default_params(params)
         else:
             raise NotImplementedError("Subclass should define _default_params")
 
