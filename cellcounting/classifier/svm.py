@@ -6,6 +6,7 @@ Github: dangkhoasdc
 Description: SVM Classifier: use cross-validation and grid search
 in order to find the best parameters
 """
+import numpy as np
 
 
 class SVM(object):
@@ -17,6 +18,7 @@ class SVM(object):
         self.training_labels = training_labels
         self.testing_data = testing_data
         self.testing_labels = testing_labels
+        self.model = None
 
     def auto_train(self, samples=None, labels=None, k_fold=None):
         """ The idea comes from auto_train method in OpenCV lib """
@@ -26,6 +28,7 @@ class SVM(object):
         if samples is not None and labels is not None:
             self.training_data = samples
             self.training_labels = labels
+        assert type(self.training_data) is np.ndarray
+        assert type(self.training_lables) is np.ndarray
 
-        assert self.training_data is not None
-        assert self.training_labels is not None
+
