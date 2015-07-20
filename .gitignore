@@ -2,4 +2,5 @@
 *.png
 *.xyc
 .ropeproject/*
+model_*
 

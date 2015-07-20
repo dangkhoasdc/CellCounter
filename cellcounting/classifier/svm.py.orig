@@ -6,10 +6,14 @@ Github: dangkhoasdc
 Description: SVM Classifier: use cross-validation and grid search
 in order to find the best parameters
 """
+<<<<<<< HEAD
+from sklearn.externals import joblib
+=======
 import numpy as np
 from sklearn.externals import joblib
 from sklearn.svm import SVC
 from sklearn.grid_search import GridSearchCV
+>>>>>>> newfw
 
 
 class SVM(object):
@@ -26,6 +30,14 @@ class SVM(object):
         self.testing_data = testing_data
         self.testing_labels = testing_labels
         self._model = None
+<<<<<<< HEAD
+
+    def load(self, filename):
+        """ load the model from file """
+        self._model = joblib.load(filename)
+
+    def auto_train(self, samples=None, labels=None, k_fold=None, save=True):
+=======
         self._best_params = None
 
     def load(self):
@@ -34,6 +46,7 @@ class SVM(object):
 
     def auto_train(self, samples=None, labels=None, k_fold=None, save=True,
                    c_range=None, gamma_range=None):
+>>>>>>> newfw
         """ The idea comes from auto_train method in OpenCV lib """
 
         if k_fold is not None:
@@ -42,6 +55,11 @@ class SVM(object):
             self.training_data = samples
             self.training_labels = labels
 
+<<<<<<< HEAD
+        assert self.training_data is not None
+        assert self.training_labels is not None
+
+=======
         assert type(self.training_data) is np.ndarray
         assert type(self.training_labels) is np.ndarray
         # grid search + cross-validation
@@ -52,7 +70,7 @@ class SVM(object):
 
         param_grid = {"C": c_range, "gamma": gamma_range}
         clf = SVC(kernel="rbf", tol=10e-6)
-        print self.k_fold
+
         self._model = GridSearchCV(clf,
                                    param_grid=param_grid,
                                    n_jobs=-1,
@@ -61,12 +79,23 @@ class SVM(object):
         self._model.fit(self.training_data, self.training_labels)
 
         self._best_params = self._model.best_params_
+>>>>>>> newfw
         if save:
             joblib.dump(self._model, "model")
 
     def predict(self, sample):
+<<<<<<< HEAD
+        yield
+
+    def predict_all(self, sample):
+        yield
+
+    def __str__(self):
+        return "SVM Model"
+=======
         """ predict the label of a sample """
         return self._model.predict(sample)
 
     def __str__(self):
         return "SVM Model :" + str(self._best_params)
+>>>>>>> newfw
