@@ -9,7 +9,8 @@ import cv2
 
 resize_width, resize_height = 432, 324
 ratio = 1.0/6
-tol = 10
+tol = 30
+
 
 def visualize_loc(img, points, wait=False):
     """
@@ -27,13 +28,20 @@ def visualize_loc(img, points, wait=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+
+def get_true_locs(fname):
+    """ Get a list of expected locations in xyc file """
+    assert fname[-3:] == "xyc"
+    f = open(fname, "r")
+    points = [tuple(map(int, loc.split())) for loc in f.readlines()]
+    return points
+
+
 if __name__ == '__main__':
     import sys
 
     print "Visualize the detected cells in an image"
     print "Usage:"
     print "python allidb.py image filelist"
-    f = open(sys.argv[2], "r")
-    points = [tuple(map(int, loc.split())) for loc in f.readlines()]
 
     visualize_loc(sys.argv[1], points, True)

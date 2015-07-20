@@ -39,7 +39,7 @@ def flatten(lst):
 
 def nearest_point(value, point_lst):
     """ Find the nearest point in points list """
-    dists = sorted(point_lst, lambda x, p=value: np.abs(euclid(x, p)))
+    dists = sorted(point_lst, key=lambda x, p=value: np.abs(euclid(x, p)))
     return dists[0], np.abs(euclid(dists[0], value))
 
 

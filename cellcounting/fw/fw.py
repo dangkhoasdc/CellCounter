@@ -26,8 +26,6 @@ class Framework(object):
         self._segmentation = segmentation_stage
         self._classification = classification
         self._extraction = extraction
-        self.preprocess_method = None
-        self.extract_method = None
         self._model = None
 
     def preprocess(self, image):
@@ -42,8 +40,8 @@ class Framework(object):
     def train(self, samples, labels, save):
         assert type(samples) is np.ndarray
         assert type(labels) is np.ndarray
-        assert samples.shape[0] == labels.shape[1]
-        model = self._classification.train_auto(samples, labels)
+        assert samples.shape[0] == labels.shape[0]
+        model = self._classification.auto_train(samples, labels)
         self._model = model
         if save:
             joblib.dump(model, "model")
@@ -61,23 +59,35 @@ class Framework(object):
         images = [self.preprocess(im) for im in original_im]
         # Segmentation
         segments = [self.segment(im) for im in images]
+        im_width = original_im[0].shape[1]
+        im_height = original_im[0].shape[0]
         assert len(segments) != 0
         # Cropping from segmented image
-        assert type(segments[0]) is Contour
+        assert type(segments[0][0]) is Contour
+
+        new_segments = []
+        for seg in segments:
+            seg = [s for s in seg if s.center[0] -wd_sz >= 0 and s.center[0] + wd_sz +1 < im_height]
+            seg = [s for s in seg if s.center[1] -wd_sz >= 0 and s.center[1] + wd_sz +1 < im_width]
+            new_segments.append(seg)
+        segments = new_segments
+
         num_samples = len(com.flatten(segments))
         feature_size = len(self._extraction)
         training_samples = np.empty((num_samples, feature_size), dtype=float)
-        training_labels = np.empty((1, num_samples), dtype=int)
+        training_labels = np.empty(num_samples, dtype=int)
         idx = 0
         for im_idx, (segs, cords) in enumerate(zip(segments, loc_lst)):
             for s in segs:
-                value, point = com.nearest_point(s.center, cords)
+                point, value= com.nearest_point(s.center, cords)
+
                 if value <= allidb.tol:
                     label = 1
-                    cords.remove(value)
+                    cords.remove(point)
                 else:
                     label = 0
-                cropped_im = original_im[im_idx][s.center[0] - wd_sz: s.center[0] - wd_sz + 1,
+
+                cropped_im = original_im[im_idx][s.center[0] - wd_sz: s.center[0] + wd_sz + 1,
                                                  s.center[1] - wd_sz: s.center[1] + wd_sz + 1]
                 training_samples[idx] = self.extract_features(cropped_im)
                 training_labels[idx] = label
