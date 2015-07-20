@@ -24,16 +24,17 @@ def visualize_loc(img, points, wait=False):
     for p in points:
         cv2.circle(im, p, 5, (255, 0, 0), -1)
     cv2.imshow("Ground True Data", im)
-    if wait == True:
+    if wait:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
 
-def get_true_locs(fname):
+def get_true_locs(fname, scale_ratio=ratio):
     """ Get a list of expected locations in xyc file """
     assert fname[-3:] == "xyc"
     f = open(fname, "r")
     points = [tuple(map(int, loc.split())) for loc in f.readlines()]
+    points = [(int(scale_ratio*p[0]), int(scale_ratio*p[1])) for p in points]
     return points
 
 
