@@ -16,12 +16,14 @@ from .absframework import AbsFramework
 class Framework(object):
     """Main Framework"""
     def __init__(self, window_size,
+                 scale_ratio,
                  preprocess_stage,
                  segmentation_stage,
                  extraction,
                  classification):
         """init"""
         super(Framework, self).__init__()
+        self.scale_ratio = scale_ratio
         self._window_size = window_size
         self._preprocess = preprocess_stage
         self._segmentation = segmentation_stage
@@ -38,15 +40,19 @@ class Framework(object):
     def segment(self, image):
         return self._segmentation.run(image)
 
-    def train(self, samples, labels, save):
-        assert type(samples) is np.ndarray
-        assert type(labels) is np.ndarray
-        assert samples.shape[0] == labels.shape[0]
-        model = self._classification.auto_train(samples, labels)
-        self._model = model
-        if save:
-            joblib.dump(model, "model")
-        return model
+    def imread(self, fname, flags=1):
+        """ load an image and scale it"""
+        im = cv2.imread(fname, flags)
+        height, width = im.shape[:2]
+
+        height = int(self.scale_ratio * height)
+        width  = int(self.scale_ratio * width)
+
+        if im is None:
+            raise IOError("Could not load an image ", fname)
+        im = cv2.resize(im, (width, height))
+        return im
+
 
     def run_train(self, image_lst, loc_lst, save):
         assert self._window_size % 2 == 1
@@ -56,7 +62,7 @@ class Framework(object):
         print "Training Phase"
         wd_sz = (self._window_size - 1) / 2
         # Preprocessing
-        original_im = [cv2.imread(im, 1) for im in image_lst]
+        original_im = [self.imread(im, 1) for im in image_lst]
         images = [self.preprocess(im) for im in original_im]
         # Segmentation
         segments = [self.segment(im) for im in images]
@@ -105,15 +111,14 @@ class Framework(object):
         num_cells = 0
         correct_cells = 0
         wd_sz = (self._window_size - 1) / 2
-        original_im = cv2.imread(image, 1)
-        draw_im = cv2.resize(original_im, (allidb.resize_width, allidb.resize_height))
+        original_im = self.imread(image, 1)
         segments = self.segment(self.preprocess(original_im))
         im_width = original_im.shape[1]
         im_height = original_im.shape[0]
         segments = [s for s in segments if s.center[0] -wd_sz >= 0 and s.center[0] + wd_sz +1 < im_height]
         segments = [s for s in segments if s.center[1] -wd_sz >= 0 and s.center[1] + wd_sz +1 < im_width]
         for seg in segments:
-            cv2.circle(draw_im, (int(allidb.ratio *seg.center[0] ), int(allidb.ratio * seg.center[1])), 3, (255, 0, 0), -1)
+            cv2.circle(original_im, seg.center, 3, (255, 0, 0), -1)
             cropped_im = original_im[seg.center[0] - wd_sz: seg.center[0] + wd_sz + 1,
                                      seg.center[1] - wd_sz: seg.center[1] + wd_sz + 1]
             testing_sample = self.extract(cropped_im)
@@ -125,7 +130,7 @@ class Framework(object):
                 if value <= allidb.tol:
                     correct_cells += 1
                 num_cells += 1
-        com.debug_im(draw_im)
+        com.debug_im(original_im)
         print "correct cells ", correct_cells
         return num_cells
 

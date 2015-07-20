@@ -81,11 +81,12 @@ class LocalBinaryPattern(Stage, Feature):
 
 if __name__ == '__main__':
     print "Main Program"
+    scale = 1 / 6.0
     pre = GaussianAndOpening()
-    seg = SegmentStage(100)
+    seg = SegmentStage(5)
     local = LocalBinaryPattern(21)
     svm = SVM(k_fold=3)
-    framework = fw.Framework(21, pre, seg, local, svm)
+    framework = fw.Framework(21, scale, pre, seg, local, svm)
 
 
     try:
@@ -99,17 +100,18 @@ if __name__ == '__main__':
     file_train.close()
 
     image_lst = [line+".jpg" for line in row_lst]
-    loc_lst = [allidb.get_true_locs(line+".xyc") for line in row_lst]
+    loc_lst = [allidb.get_true_locs(line+".xyc", scale) for line in row_lst]
 
     file_test= open(ftest, "r")
     row_lst = [line.strip() for line in file_test.readlines()]
     file_test.close()
 
     test_image_lst = [line+".jpg" for line in row_lst]
-    test_loc_lst = [allidb.get_true_locs(line+".xyc") for line in row_lst]
+    test_loc_lst = [allidb.get_true_locs(line+".xyc", scale) for line in row_lst]
 
     framework.run_train(image_lst, loc_lst, True)
     framework.test(test_image_lst[0], test_loc_lst[0])
+
     # image = cv2.imread(sys.argv[1])
     # image = cv2.resize(image, (432, 324))
     # result = pre.run(image)
