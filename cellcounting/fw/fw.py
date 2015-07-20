@@ -106,18 +106,27 @@ class Framework(object):
         correct_cells = 0
         wd_sz = (self._window_size - 1) / 2
         original_im = cv2.imread(image, 1)
+        draw_im = cv2.resize(original_im, (allidb.resize_width, allidb.resize_height))
         segments = self.segment(self.preprocess(original_im))
+        im_width = original_im.shape[1]
+        im_height = original_im.shape[0]
+        segments = [s for s in segments if s.center[0] -wd_sz >= 0 and s.center[0] + wd_sz +1 < im_height]
+        segments = [s for s in segments if s.center[1] -wd_sz >= 0 and s.center[1] + wd_sz +1 < im_width]
         for seg in segments:
+            cv2.circle(draw_im, (int(allidb.ratio *seg.center[0] ), int(allidb.ratio * seg.center[1])), 3, (255, 0, 0), -1)
             cropped_im = original_im[seg.center[0] - wd_sz: seg.center[0] + wd_sz + 1,
                                      seg.center[1] - wd_sz: seg.center[1] + wd_sz + 1]
-            testing_sample = self.extract_features(cropped_im)
+            testing_sample = self.extract(cropped_im)
 
-            result = self.predict(testing_sample)
-            if result == 1:
-                value = com.nearest_point(result, loc_list)
+            result = self._classification.predict(testing_sample)
+            print result
+            if result[0] == 1:
+                _, value = com.nearest_point(seg.center, loc_list)
                 if value <= allidb.tol:
                     correct_cells += 1
                 num_cells += 1
+        com.debug_im(draw_im)
+        print "correct cells ", correct_cells
         return num_cells
 
     def __str__(self):

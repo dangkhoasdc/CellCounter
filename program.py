@@ -89,17 +89,27 @@ if __name__ == '__main__':
 
 
     try:
-        f = sys.argv[1]
+        ftrain, ftest = sys.argv[1:]
     except:
-        f = "training.txt"
+        ftrain = "training.txt"
+        ftest = "test.txt"
 
-    file_train = open(f, "r")
+    file_train = open(ftrain, "r")
     row_lst = [line.strip() for line in file_train.readlines()]
+    file_train.close()
 
     image_lst = [line+".jpg" for line in row_lst]
     loc_lst = [allidb.get_true_locs(line+".xyc") for line in row_lst]
 
+    file_test= open(ftest, "r")
+    row_lst = [line.strip() for line in file_test.readlines()]
+    file_test.close()
+
+    test_image_lst = [line+".jpg" for line in row_lst]
+    test_loc_lst = [allidb.get_true_locs(line+".xyc") for line in row_lst]
+
     framework.run_train(image_lst, loc_lst, True)
+    framework.test(test_image_lst[0], test_loc_lst[0])
     # image = cv2.imread(sys.argv[1])
     # image = cv2.resize(image, (432, 324))
     # result = pre.run(image)
