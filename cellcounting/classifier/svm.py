@@ -52,7 +52,7 @@ class SVM(object):
 
         param_grid = {"C": c_range, "gamma": gamma_range}
         clf = SVC(kernel="rbf", tol=10e-6)
-
+        print self.k_fold
         self._model = GridSearchCV(clf,
                                    param_grid=param_grid,
                                    n_jobs=-1,

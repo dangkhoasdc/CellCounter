@@ -10,9 +10,10 @@ from ..segmentation.contour import Contour
 from ..db import allidb
 import cv2
 import numpy as np
+from .absframework import AbsFramework
 
 
-class Framework(object, AbsFramework):
+class Framework(object):
     """Main Framework"""
     def __init__(self, window_size,
                  preprocess_stage,
@@ -89,15 +90,15 @@ class Framework(object, AbsFramework):
 
                 cropped_im = original_im[im_idx][s.center[0] - wd_sz: s.center[0] + wd_sz + 1,
                                                  s.center[1] - wd_sz: s.center[1] + wd_sz + 1]
-                training_samples[idx] = self.extract_features(cropped_im)
+                training_samples[idx] = self.extract(cropped_im)
                 training_labels[idx] = label
                 idx += 1
 
         assert type(training_samples) is np.ndarray
         assert type(training_labels) is np.ndarray
-        assert training_samples.shape[0] == training_labels.shape[1]
+        assert training_samples.shape[0] == training_labels.shape[0]
 
-        self._classification.train_auto(training_samples, training_labels, save)
+        self._classification.auto_train(training_samples, training_labels, save=save)
 
     def test(self, image, loc_list):
         """ test an image """
