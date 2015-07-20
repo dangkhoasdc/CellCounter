@@ -5,6 +5,7 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Stage Class Definition
 """
+from .absframework import AbsFramework
 from .. import common as com
 from ..segmentation.contour import Contour
 from ..db import allidb
@@ -37,6 +38,10 @@ class Framework(object, AbsFramework):
     def segment(self, image):
         return self._segmentation.run(image)
 
+<<<<<<< HEAD
+    def train(self, image_lst, loc_lst, save):
+        """ implement training stage """
+=======
     def train(self, samples, labels, save):
         assert type(samples) is np.ndarray
         assert type(labels) is np.ndarray
@@ -48,6 +53,7 @@ class Framework(object, AbsFramework):
         return model
 
     def run_train(self, image_lst, loc_lst, save):
+>>>>>>> newfw
         assert self._window_size % 2 == 1
         assert type(image_lst) is list
         assert type(loc_lst) is list
