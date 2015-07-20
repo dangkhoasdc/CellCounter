@@ -130,7 +130,7 @@ class Framework(object):
                 if value <= allidb.tol:
                     correct_cells += 1
                 num_cells += 1
-        com.debug_im(original_im)
+        com.debug_im(original_im, True)
         print "correct cells ", correct_cells
         return num_cells
 

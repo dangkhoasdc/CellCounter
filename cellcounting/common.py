@@ -9,6 +9,7 @@ import numpy as np
 import scipy.spatial.distance as dist
 import cv2
 from matplotlib import pyplot as plt
+import random
 
 
 def euclid(p1, p2):
@@ -43,8 +44,10 @@ def nearest_point(value, point_lst):
     return dists[0], np.abs(euclid(dists[0], value))
 
 
-def debug_im(image):
+def debug_im(image, wait=False):
     """ debug an image """
-    cv2.imshow("Debug", image)
+    code = random.random()
+    cv2.imshow("Debug " + str(code), image)
     cv2.waitKey(0)
-    cv2.destroyWindow("Debug")
+    if wait:
+        cv2.destroyWindow("Debug")

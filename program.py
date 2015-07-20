@@ -43,7 +43,7 @@ class GaussianAndOpening(Stage):
         # cv2.THRESH_BINARY_INV,
         # 31, 0)
         kernel_erosion = np.ones((10, 10), dtype=np.int8)
-        kernel_dilation = np.ones((1, 1), dtype=np.int8)
+        kernel_dilation = np.ones((4, 4), dtype=np.int8)
         thres = morph.opening(thres, kernel_erosion, kernel_dilation)
         thres = ~thres
         return thres
@@ -58,8 +58,13 @@ class SegmentStage(Stage):
 
     def run(self, image):
         wd_sz = self.params["wd_sz"]
+        origin = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         contours = cont.findContours(image)
         contours = [con for con in contours if con.width > wd_sz and con.height > wd_sz]
+
+        for con in contours:
+            con.draw(origin, (128, 0, 0), 1)
+        com.debug_im(origin, False)
         return contours
 
 
