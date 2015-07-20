@@ -103,7 +103,7 @@ class Framework(object):
         assert type(training_samples) is np.ndarray
         assert type(training_labels) is np.ndarray
         assert training_samples.shape[0] == training_labels.shape[0]
-
+        print training_labels
         self._classification.auto_train(training_samples, training_labels, save=save)
 
     def test(self, image, loc_list):
@@ -124,13 +124,13 @@ class Framework(object):
             testing_sample = self.extract(cropped_im)
 
             result = self._classification.predict(testing_sample)
-            print result
             if result[0] == 1:
                 _, value = com.nearest_point(seg.center, loc_list)
                 if value <= allidb.tol:
                     correct_cells += 1
                 num_cells += 1
         com.debug_im(original_im, True)
+        print "The expected number of cells: ", len(loc_list)
         print "correct cells ", correct_cells
         return num_cells
 

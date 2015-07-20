@@ -21,9 +21,9 @@ from cellcounting.classifier.svm import SVM
 
 class GaussianAndOpening(Stage):
     """ gaussian filter + opening """
-    def __init__(self, wd_sz=5):
+    def __init__(self, wd_sz=3):
         params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 7}
+        self._default_params = {"wd_sz": 3}
         super(GaussianAndOpening,
               self).__init__("Gaussian and Opening operation", params)
 
@@ -32,20 +32,28 @@ class GaussianAndOpening(Stage):
         inp = image
         # com.drawHist(image, 1)
         assert inp.size > 0
-        im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
-        # im = cv2.GaussianBlur(im, gaussian_sz, 2)
-        _, thres = cv2.threshold(im,
-                                 0,
-                                 255,
-                                 cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
+        # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
+        # for channel in cv2.split(inp):
+            # com.debug_im(channel)
+        im = cv2.split(inp)[2]
+        can = cv2.bilateralFilter(im, 3, 50, 50)
+        com.debug_im(can)
+        thres = cv2.Canny(can, 32, 160)
+        # im = cv2.GaussianBlur(im, gaussian_sz, 0)
+        # im = cv2.bilateralFilter(im, -1, 10, 5)
+        # _, thres = cv2.threshold(im,
+                                 # 0,
+                                 # 255,
+                                 # cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
         # thres = cv2.adaptiveThreshold(im, 255,
         # cv2.ADAPTIVE_THRESH_MEAN_C,
         # cv2.THRESH_BINARY_INV,
         # 31, 0)
-        kernel_erosion = np.ones((10, 10), dtype=np.int8)
-        kernel_dilation = np.ones((4, 4), dtype=np.int8)
-        thres = morph.opening(thres, kernel_erosion, kernel_dilation)
-        thres = ~thres
+        kernel_erosion = np.ones((3, 3), dtype=np.int8)
+        kernel_dilation = np.ones((3, 3), dtype=np.int8)
+        thres = morph.close(thres, kernel_dilation, kernel_erosion)
+        com.debug_im(image)
+        com.debug_im(thres)
         return thres
 
 
