@@ -3,4 +3,5 @@
 *.xyc
 .ropeproject/*
 model_*
+*.pyc
 

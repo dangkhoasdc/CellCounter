@@ -49,8 +49,8 @@ class GaussianAndOpening(Stage):
         # cv2.ADAPTIVE_THRESH_MEAN_C,
         # cv2.THRESH_BINARY_INV,
         # 31, 0)
-        kernel_erosion = np.ones((3, 3), dtype=np.int8)
-        kernel_dilation = np.ones((3, 3), dtype=np.int8)
+        kernel_erosion = np.ones((4, 4), dtype=np.int8)
+        kernel_dilation = np.ones((4, 4), dtype=np.int8)
         thres = morph.close(thres, kernel_dilation, kernel_erosion)
         com.debug_im(image)
         com.debug_im(thres)
@@ -69,9 +69,20 @@ class SegmentStage(Stage):
         origin = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         contours = cont.findContours(image)
         contours = [con for con in contours if con.width > wd_sz and con.height > wd_sz]
+        filtered_contours = []
+
+        for con in contours:
+            result = any([(c.lefttop[0] > con.lefttop[0] and c.lefttop[1] > con.lefttop[1])
+                          and (c.rightbottom[0] < con.rightbottom[0] and c.rightbottom[1] < con.rightbottom[1])
+                          for c in contours])
+            if not result:
+                filtered_contours.append(con)
+
+        contours = filtered_contours
 
         for con in contours:
             con.draw(origin, (128, 0, 0), 1)
+
         com.debug_im(origin, False)
         return contours
 
