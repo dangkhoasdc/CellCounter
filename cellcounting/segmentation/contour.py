@@ -14,8 +14,8 @@ class Contour(object):
     def __init__(self, points_lst):
         """constructor"""
         lefttop, rightbottom = Contour.boundary(points_lst)
-        self.lefttop = lefttop
-        self.rightbottom = rightbottom
+        self.lt = lefttop
+        self.rb = rightbottom
 
     def draw(self, image, color, thickness=None, ):
         """ draw a rectangle bounding the contour """
@@ -23,7 +23,7 @@ class Contour(object):
         assert type(color) is tuple and len(color) == 3
         if thickness is None:
             thickness = 1
-        cv2.rectangle(image, self.rightbottom, self.lefttop, color, thickness)
+        cv2.rectangle(image, self.rb, self.lt, color, thickness)
 
     @staticmethod
     def boundary(points_lst):
@@ -37,22 +37,30 @@ class Contour(object):
     @property
     def center(self):
         """ return the center of the contour """
-        return ((self.lefttop[0] + self.rightbottom[0]) / 2,
-                (self.lefttop[1] + self.rightbottom[1]) / 2)
+        return ((self.lt[0] + self.rb[0]) / 2,
+                (self.lt[1] + self.rb[1]) / 2)
 
 
     @property
     def width(self):
         """ return the width of the rectangle bounding the contour """
-        return abs(self.rightbottom[0] - self.lefttop[0])
+        return abs(self.rb[0] - self.lt[0])
 
     @property
     def height(self):
         """ return the width of the rectangle bounding the contour """
-        return abs(self.rightbottom[1] - self.lefttop[1])
+        return abs(self.rb[1] - self.lt[1])
 
     def __str__(self):
-        return str(self.lefttop) + ":" + str(self.rightbottom)
+        return str(self.lt) + ":" + str(self.rb)
+
+    def __eq__(self, other):
+        return self.lt[0] == other.lefttop[0] \
+            and self.lt[1] == other.lefttop[1] \
+            and self.rb[0] == other.rightbottom[0] \
+            and self.rb[1] == other.rightbottom[1] \
+
+
 
 
 def findContours(image):

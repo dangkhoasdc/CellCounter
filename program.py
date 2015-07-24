@@ -49,9 +49,9 @@ class GaussianAndOpening(Stage):
         # cv2.ADAPTIVE_THRESH_MEAN_C,
         # cv2.THRESH_BINARY_INV,
         # 31, 0)
-        kernel_erosion = np.ones((4, 4), dtype=np.int8)
         kernel_dilation = np.ones((4, 4), dtype=np.int8)
-        thres = morph.close(thres, kernel_dilation, kernel_erosion)
+        thres = morph.dilate(thres, kernel_dilation)
+        thres = morph.thinning(thres)
         com.debug_im(image)
         com.debug_im(thres)
         return thres
@@ -64,6 +64,11 @@ class SegmentStage(Stage):
         self._default_params = {"wd_sz": 10}
         super(SegmentStage, self).__init__("findContours algorithm", params)
 
+    def inside(self, l, s):
+        """ Check if s is inside l """
+        return (( l.lt[0] < s.lt[0] and l.lt[1] < s.lt[1]) and (s.rb[0] <= l.rb[0] and s.rb[1] <= l.rb[1])) \
+            or (( l.lt[0] <= s.lt[0] and l.lt[1] <= s.lt[1]) and (s.rb[0] < l.rb[0] and s.rb[1] < l.rb[1]))
+
     def run(self, image):
         wd_sz = self.params["wd_sz"]
         origin = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -72,9 +77,7 @@ class SegmentStage(Stage):
         filtered_contours = []
 
         for con in contours:
-            result = any([(c.lefttop[0] > con.lefttop[0] and c.lefttop[1] > con.lefttop[1])
-                          and (c.rightbottom[0] < con.rightbottom[0] and c.rightbottom[1] < con.rightbottom[1])
-                          for c in contours])
+            result = any([self.inside(con, s) for s in contours])
             if not result:
                 filtered_contours.append(con)
 

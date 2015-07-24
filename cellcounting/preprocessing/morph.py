@@ -8,6 +8,8 @@ Description: Morphological operations
 
 import cv2
 import numpy as np
+import pymorph
+from scipy import weave
 
 
 def dilate(img, kernel, iters=1):
@@ -56,3 +58,50 @@ def hitmiss(img, kernel, iters):
 def skeletonize(img, kernel, iters):
     """ skeletonize operation """
     yield
+
+
+def thinningIter(im, iter):
+    """ thinning Iterations """
+    assert len(im.shape) == 2
+
+    marker = np.zeros(im.shape, dtype=np.uint8)
+    for i in range(1, im.shape[0]-1):
+        for j in range(1, im.shape[1]-1):
+
+            p2 = im[i-1, j]
+            p3 = im[i-1, j+1]
+            p4 = im[i, j+1]
+            p5 = im[i+1, j+1]
+            p6 = im[i+1, j]
+            p7 = im[i+1, j-1]
+            p8 = im[i, j-1]
+            p9 = im[i-1, j-1]
+
+            A = (p2 == 0 and p3 == 1) + (p3 == 0 and p4 == 1) + \
+                 (p4 == 0 and p5 == 1) + (p5 == 0 and p6 == 1) + \
+                 (p6 == 0 and p7 == 1) + (p7 == 0 and p8 == 1) + \
+                 (p8 == 0 and p9 == 1) + (p9 == 0 and p2 == 1)
+
+            B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
+
+            m1 = p2 * p4 * p6 if iter == 0 else p2 * p4 * p8
+            m2 = p4 * p6 * p8 if iter == 0 else p2 * p6 * p8
+
+            if A == 1 and (2 <= B <= 6) and m1 == 0 and m2 == 0:
+                marker[i, j] = 1
+
+
+    return im & ~marker
+
+
+def thinning(img, iters=-1):
+    """ thinning morphological operation """
+    # convert to binary
+    assert len(img.shape) == 2
+
+    bin_img = pymorph.binary(img)
+
+    result = pymorph.thin(bin_img, n=iters)
+
+    return pymorph.gray(result)
+
