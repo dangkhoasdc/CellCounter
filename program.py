@@ -69,9 +69,8 @@ class SegmentStage(Stage):
         return (( l.lt[0] < s.lt[0] and l.lt[1] < s.lt[1]) and (s.rb[0] <= l.rb[0] and s.rb[1] <= l.rb[1])) \
             or (( l.lt[0] <= s.lt[0] and l.lt[1] <= s.lt[1]) and (s.rb[0] < l.rb[0] and s.rb[1] < l.rb[1]))
 
-    def run(self, image):
+    def run(self, image, orig_image=None):
         wd_sz = self.params["wd_sz"]
-        origin = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         contours = cont.findContours(image)
         contours = [con for con in contours if con.width > wd_sz and con.height > wd_sz]
         filtered_contours = []
@@ -82,11 +81,11 @@ class SegmentStage(Stage):
                 filtered_contours.append(con)
 
         contours = filtered_contours
+        if orig_image is not None:
+            for con in contours:
+                con.draw(orig_image, (128, 0, 0), 1)
 
-        for con in contours:
-            con.draw(origin, (128, 0, 0), 1)
-
-        com.debug_im(origin, False)
+            com.debug_im(orig_image, False)
         return contours
 
 
@@ -94,7 +93,7 @@ class LocalBinaryPattern(Stage, Feature):
     """ Local Binary Pattern feature """
     def __init__(self, sz):
         params = {"sz": sz}
-        self._default_params = {"sz": 21}
+        self._default_params = {"sz": 30}
         super(LocalBinaryPattern, self).__init__("Local Binary Pattern", params)
 
     def __len__(self):
@@ -110,10 +109,10 @@ if __name__ == '__main__':
     print "Main Program"
     scale = 1 / 6.0
     pre = GaussianAndOpening()
-    seg = SegmentStage(5)
-    local = LocalBinaryPattern(21)
+    seg = SegmentStage(10)
+    local = LocalBinaryPattern(31)
     svm = SVM(k_fold=3)
-    framework = fw.Framework(21, scale, pre, seg, local, svm)
+    framework = fw.Framework(31, scale, pre, seg, local, svm)
 
 
     try:
