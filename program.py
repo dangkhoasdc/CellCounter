@@ -32,26 +32,16 @@ class GaussianAndOpening(Stage):
         inp = image
         # com.drawHist(image, 1)
         assert inp.size > 0
-        # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
-        # for channel in cv2.split(inp):
-            # com.debug_im(channel)
         im = cv2.split(inp)[2]
-        can = cv2.bilateralFilter(im, 3, 50, 50)
-        com.debug_im(can)
-        thres = cv2.Canny(can, 32, 160)
-        # im = cv2.GaussianBlur(im, gaussian_sz, 0)
-        # im = cv2.bilateralFilter(im, -1, 10, 5)
-        # _, thres = cv2.threshold(im,
-                                 # 0,
-                                 # 255,
-                                 # cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
-        # thres = cv2.adaptiveThreshold(im, 255,
-        # cv2.ADAPTIVE_THRESH_MEAN_C,
-        # cv2.THRESH_BINARY_INV,
-        # 31, 0)
-        kernel_dilation = np.ones((4, 4), dtype=np.int8)
-        thres = morph.dilate(thres, kernel_dilation)
+        can = cv2.bilateralFilter(im, 7, 10, 60)
+        thres = cv2.Canny(can, 20, 200, L2gradient=True)
+        # thres = cv2.Canny(can, 10, 200)
+        kernel_dilation = np.ones((3, 3), dtype=np.int8)
+        kernel_erosion = np.ones((2, 2), dtype=np.uint8)
+        thres = morph.dilate(thres, kernel_dilation, 4)
+        thres = morph.erode(thres, kernel_erosion, 4)
         thres = morph.thinning(thres)
+        com.debug_im(can)
         com.debug_im(image)
         com.debug_im(thres)
         return thres
@@ -61,7 +51,7 @@ class SegmentStage(Stage):
     """ Segmentation algorithm """
     def __init__(self, wd_sz=None):
         params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 10}
+        self._default_params = {"wd_sz": 10, "dist_tol": 15}
         super(SegmentStage, self).__init__("findContours algorithm", params)
 
     def inside(self, l, s):
@@ -70,15 +60,22 @@ class SegmentStage(Stage):
             or (( l.lt[0] <= s.lt[0] and l.lt[1] <= s.lt[1]) and (s.rb[0] < l.rb[0] and s.rb[1] < l.rb[1]))
 
     def run(self, image, orig_image=None):
+        dist_tol = self.params["dist_tol"]
         wd_sz = self.params["wd_sz"]
         contours = cont.findContours(image)
         contours = [con for con in contours if con.width > wd_sz and con.height > wd_sz]
         filtered_contours = []
 
         for con in contours:
-            result = any([self.inside(con, s) for s in contours])
+            result = any([self.inside(con, s) for s in contours if s != con])
             if not result:
                 filtered_contours.append(con)
+
+        for con in filtered_contours:
+            for c in filtered_contours:
+                if con != c and com.euclid(c.center, con.center) < dist_tol:
+                    filtered_contours.remove(c)
+
 
         contours = filtered_contours
         if orig_image is not None:
@@ -101,7 +98,8 @@ class LocalBinaryPattern(Stage, Feature):
 
     def run(self, image):
         """ run LBP feature """
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        # image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        image = cv2.split(image)[2]
         assert len(image.shape) == 2
         return lbp(image, 2, np.pi / 4.0).flatten()
 
