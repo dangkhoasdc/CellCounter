@@ -66,5 +66,13 @@ class Contour(object):
 def findContours(image):
     """ find all contours in an image """
     conts, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    new_conts = []
+    for c in conts:
+        cnt_len = cv2.arcLength(c, True)
+        cnt = cv2.approxPolyDP(c, 0.065 * cnt_len, True)
+        if cv2.isContourConvex(cnt):
+            new_conts.append(c)
+
+    conts = new_conts
     segments = [Contour(points_lst) for points_lst in conts]
     return segments

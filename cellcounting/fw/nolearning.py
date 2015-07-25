@@ -65,7 +65,10 @@ class NoLearningFramework(object):
             com.debug_im(demo_img)
         print "The number of expected cells: ", expected_nums
         print "The number of true counting cells: ", correct
-        error_ratio = (expected_nums - correct) / float(expected_nums)
+        if expected_nums != 0:
+            error_ratio = abs(expected_nums - correct) / float(expected_nums)
+        else:
+            error_ratio = 0
         print "Error ratio: ", error_ratio
         return len(segments), error_ratio
 

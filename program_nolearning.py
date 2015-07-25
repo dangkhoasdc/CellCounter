@@ -32,7 +32,7 @@ class GaussianAndOpening(Stage):
         assert inp.size > 0
         im = cv2.split(inp)[2]
         can = cv2.bilateralFilter(im, 7, 10, 60)
-        thres = cv2.Canny(can, 20, 200, L2gradient=True)
+        thres = cv2.Canny(can, 20, 180, L2gradient=True)
         # thres = cv2.Canny(can, 10, 200)
         kernel_dilation = np.ones((3, 3), dtype=np.int8)
         kernel_erosion = np.ones((2, 2), dtype=np.uint8)
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     print "Main Program"
     scale = 1 / 6.0
     pre = GaussianAndOpening()
-    seg = SegmentStage(10)
+    seg = SegmentStage(15)
     framework = nolearning.NoLearningFramework(scale, pre, seg)
 
     try:

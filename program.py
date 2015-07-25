@@ -135,14 +135,3 @@ if __name__ == '__main__':
 
     framework.run_train(image_lst, loc_lst, True)
     framework.test(test_image_lst[0], test_loc_lst[0])
-
-    # image = cv2.imread(sys.argv[1])
-    # image = cv2.resize(image, (432, 324))
-    # result = pre.run(image)
-    # cv2.imshow("Display", result)
-    # conts = seg.run(result)
-    # for c in conts:
-        # c.draw(image, (255, 0, 0), 1)
-    # cv2.imshow("display", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()

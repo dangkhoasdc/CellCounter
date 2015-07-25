@@ -33,6 +33,8 @@ def get_true_locs(fname, scale_ratio=ratio):
     assert fname[-3:] == "xyc"
     f = open(fname, "r")
     points = [tuple(map(int, loc.split())) for loc in f.readlines()]
+    if points[0] == ():
+        return []
     points = [(int(scale_ratio*p[0]), int(scale_ratio*p[1])) for p in points]
     return points
 
