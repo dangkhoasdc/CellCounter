@@ -41,22 +41,33 @@ class NoLearningFramework(object):
         processed_img = self.preprocess(demo_img)
         segments = self.segment(processed_img, demo_img)
 
+        correct = 0
+        expected_nums = len(loc_list)
         # if there is no segment in an image
         if len(segments) == 0:
+
             print "There is 0 cell in this image "
-            return 0
         else:
         # if there are more than 1 segment in this image
         # visualize cells
-            for seg in segments:
-                seg.draw(demo_img, (255, 255, 0), 1)
-
             for loc in loc_list:
                 cv2.circle(demo_img, loc, 2, (0, 255, 255), -1)
 
-            com.debug_im(demo_img)
-            return len(segments)
+            for seg in segments:
+                seg.draw(demo_img, (255, 255, 0), 1)
 
+                point, value = com.nearest_point(seg.center, loc_list)
+
+                if value <= allidb.tol:
+                    loc_list.remove(point)
+                    correct += 1
+
+            com.debug_im(demo_img)
+        print "The number of expected cells: ", expected_nums
+        print "The number of true counting cells: ", correct
+        error_ratio = (expected_nums - correct) / float(expected_nums)
+        print "Error ratio: ", error_ratio
+        return len(segments), error_ratio
 
     def preprocess(self, image):
         """ pre-process an image """
