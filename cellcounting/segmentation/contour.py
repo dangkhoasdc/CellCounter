@@ -55,10 +55,10 @@ class Contour(object):
         return str(self.lt) + ":" + str(self.rb)
 
     def __eq__(self, other):
-        return self.lt[0] == other.lefttop[0] \
-            and self.lt[1] == other.lefttop[1] \
-            and self.rb[0] == other.rightbottom[0] \
-            and self.rb[1] == other.rightbottom[1] \
+        return self.lt[0] == other.lt[0] \
+            and self.lt[1] == other.lt[1] \
+            and self.rb[0] == other.rb[0] \
+            and self.rb[1] == other.rb[1] \
 
 
 

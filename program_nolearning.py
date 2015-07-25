@@ -1,9 +1,9 @@
 """
-File: program.py
+File: program_nolearning.py
 Author: Khoa Le Tan Dang <letan.dangkhoa@gmail.com>
 Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
-Description: The main program of automatic counting of cells
+Description: Program version 2
 """
 import cv2
 import numpy as np
@@ -13,11 +13,9 @@ from cellcounting.stage import Stage
 from cellcounting.db import allidb
 from cellcounting.preprocessing import morph
 from cellcounting.segmentation import contour as cont
-from cellcounting.fw import fw
+from cellcounting.fw import nolearning
 from cellcounting.features.feature import Feature
 from cellcounting import common as com
-from cellcounting.classifier.svm import SVM
-
 
 class GaussianAndOpening(Stage):
     """ gaussian filter + opening """
@@ -86,38 +84,17 @@ class SegmentStage(Stage):
         return contours
 
 
-class LocalBinaryPattern(Stage, Feature):
-    """ Local Binary Pattern feature """
-    def __init__(self, sz):
-        params = {"sz": sz}
-        self._default_params = {"sz": 30}
-        super(LocalBinaryPattern, self).__init__("Local Binary Pattern", params)
-
-    def __len__(self):
-        return  self.params["sz"]**2
-
-    def run(self, image):
-        """ run LBP feature """
-        # image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        image = cv2.split(image)[2]
-        assert len(image.shape) == 2
-        return lbp(image, 2, np.pi / 4.0).flatten()
-
 if __name__ == '__main__':
     print "Main Program"
     scale = 1 / 6.0
     pre = GaussianAndOpening()
     seg = SegmentStage(10)
-    local = LocalBinaryPattern(31)
-    svm = SVM(k_fold=3)
-    framework = fw.Framework(31, scale, pre, seg, local, svm)
-
+    framework = nolearning.NoLearningFramework(scale, pre, seg)
 
     try:
-        ftrain, ftest = sys.argv[1:]
+        ftrain = sys.argv[1]
     except:
         ftrain = "training.txt"
-        ftest = "test.txt"
 
     file_train = open(ftrain, "r")
     row_lst = [line.strip() for line in file_train.readlines()]
@@ -125,24 +102,6 @@ if __name__ == '__main__':
 
     image_lst = [line+".jpg" for line in row_lst]
     loc_lst = [allidb.get_true_locs(line+".xyc", scale) for line in row_lst]
+    for image, loc in zip(image_lst, loc_lst):
+        framework.run(image, loc)
 
-    file_test= open(ftest, "r")
-    row_lst = [line.strip() for line in file_test.readlines()]
-    file_test.close()
-
-    test_image_lst = [line+".jpg" for line in row_lst]
-    test_loc_lst = [allidb.get_true_locs(line+".xyc", scale) for line in row_lst]
-
-    framework.run_train(image_lst, loc_lst, True)
-    framework.test(test_image_lst[0], test_loc_lst[0])
-
-    # image = cv2.imread(sys.argv[1])
-    # image = cv2.resize(image, (432, 324))
-    # result = pre.run(image)
-    # cv2.imshow("Display", result)
-    # conts = seg.run(result)
-    # for c in conts:
-        # c.draw(image, (255, 0, 0), 1)
-    # cv2.imshow("display", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()

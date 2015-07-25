@@ -19,12 +19,18 @@ def euclid(p1, p2):
 
 def drawHist(image, channel):
     """Draw the histogram of an input image """
-    assert isinstance(image, basestring)
+    flags = 0 if channel == 1 else 1
+
+    if isinstance(image, basestring):
+        im = cv2.imread(image, flags)
+    elif type(image) is np.ndarray:
+        im = image
+    else:
+        raise TypeError("The image must be basestring or ndarray")
+
     if channel == 1:
-        im = cv2.imread(image, 0)
         plt.hist(im.ravel(), 256, [0, 256]); plt.show()
     elif channel == 3:
-        im = cv2.imread(image, 1)
         color = ("b", "g", "r")
         for i, col in enumerate(color):
             histr = cv2.calcHist([im], [i], None, [256], [0, 256])

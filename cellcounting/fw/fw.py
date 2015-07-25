@@ -11,6 +11,7 @@ from ..db import allidb
 import cv2
 import numpy as np
 from .absframework import AbsFramework
+from sklearn.preprocessing import normalize
 
 
 class Framework(object):
@@ -37,8 +38,8 @@ class Framework(object):
     def extract(self, image):
         return self._extraction.run(image)
 
-    def segment(self, image):
-        return self._segmentation.run(image)
+    def segment(self, image, demo):
+        return self._segmentation.run(image, demo)
 
     def imread(self, fname, flags=1):
         """ load an image and scale it"""
@@ -65,7 +66,7 @@ class Framework(object):
         original_im = [self.imread(im, 1) for im in image_lst]
         images = [self.preprocess(im) for im in original_im]
         # Segmentation
-        segments = [self.segment(im) for im in images]
+        segments = [self.segment(im, demo_img) for im, demo_img in zip(images, original_im)]
         im_width = original_im[0].shape[1]
         im_height = original_im[0].shape[0]
         assert len(segments) != 0
@@ -86,7 +87,7 @@ class Framework(object):
         idx = 0
         for im_idx, (segs, cords) in enumerate(zip(segments, loc_lst)):
             for s in segs:
-                point, value= com.nearest_point(s.center, cords)
+                point, value = com.nearest_point(s.center, cords)
 
                 if value <= allidb.tol:
                     label = 1
@@ -104,6 +105,7 @@ class Framework(object):
         assert type(training_labels) is np.ndarray
         assert training_samples.shape[0] == training_labels.shape[0]
         print training_labels
+        normalize(training_samples, copy=False)
         self._classification.auto_train(training_samples, training_labels, save=save)
 
     def test(self, image, loc_list):
@@ -112,7 +114,7 @@ class Framework(object):
         correct_cells = 0
         wd_sz = (self._window_size - 1) / 2
         original_im = self.imread(image, 1)
-        segments = self.segment(self.preprocess(original_im))
+        segments = self.segment(self.preprocess(original_im), original_im)
         im_width = original_im.shape[1]
         im_height = original_im.shape[0]
         segments = [s for s in segments if s.center[0] -wd_sz >= 0 and s.center[0] + wd_sz +1 < im_height]
