@@ -87,7 +87,7 @@ class Framework(object):
         idx = 0
         for im_idx, (segs, cords) in enumerate(zip(segments, loc_lst)):
             for s in segs:
-                point, value= com.nearest_point(s.center, cords)
+                point, value = com.nearest_point(s.center, cords)
 
                 if value <= allidb.tol:
                     label = 1

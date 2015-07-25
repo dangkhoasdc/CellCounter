@@ -9,7 +9,7 @@ import cv2
 
 resize_width, resize_height = 432, 324
 ratio = 1.0/6
-tol = 10
+tol = 18
 
 
 def visualize_loc(img, points, wait=False):
