@@ -56,4 +56,4 @@ def debug_im(image, wait=False):
     cv2.imshow("Debug " + str(code), image)
     cv2.waitKey(0)
     if wait:
-        cv2.destroyWindow("Debug")
+        cv2.destroyAllWindows()
