@@ -53,7 +53,9 @@ def nearest_point(value, point_lst):
 def debug_im(image, wait=False):
     """ debug an image """
     code = random.random()
-    cv2.imshow("Debug " + str(code), image)
+    window_name = "Debug " + str(code)
+    cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+    cv2.imshow(window_name, image)
     cv2.waitKey(0)
     if wait:
         cv2.destroyAllWindows()

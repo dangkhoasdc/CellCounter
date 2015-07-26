@@ -31,17 +31,14 @@ class GaussianAndOpening(Stage):
         # com.drawHist(image, 1)
         assert inp.size > 0
         im = cv2.split(inp)[2]
-        can = cv2.bilateralFilter(im, 7, 10, 60)
-        thres = cv2.Canny(can, 20, 180, L2gradient=True)
+        can = cv2.adaptiveBilateralFilter(im, (25, 25), 500)
+        thres = cv2.Canny(can, 20, 300, L2gradient=True)
         # thres = cv2.Canny(can, 10, 200)
         kernel_dilation = np.ones((3, 3), dtype=np.int8)
         kernel_erosion = np.ones((2, 2), dtype=np.uint8)
         thres = morph.dilate(thres, kernel_dilation, 4)
         thres = morph.erode(thres, kernel_erosion, 4)
         thres = morph.thinning(thres)
-        com.debug_im(can)
-        com.debug_im(image)
-        com.debug_im(thres)
         return thres
 
 
@@ -76,11 +73,12 @@ class SegmentStage(Stage):
 
 
         contours = filtered_contours
-        if orig_image is not None:
-            for con in contours:
-                con.draw(orig_image, (128, 0, 0), 1)
+        # if orig_image is not None:
+            # for con in contours:
+                # con.draw(orig_image, (128, 0, 0), 1)
+                # print con.width, con.height
 
-            com.debug_im(orig_image, False)
+            # com.debug_im(orig_image, False)
         return contours
 
 
@@ -88,7 +86,7 @@ if __name__ == '__main__':
     print "Main Program"
     scale = 1 / 6.0
     pre = GaussianAndOpening()
-    seg = SegmentStage(15)
+    seg = SegmentStage(8)
     framework = nolearning.NoLearningFramework(scale, pre, seg)
 
     try:
@@ -102,6 +100,18 @@ if __name__ == '__main__':
 
     image_lst = [line+".jpg" for line in row_lst]
     loc_lst = [allidb.get_true_locs(line+".xyc", scale) for line in row_lst]
+    num_correct_items = 0
+    num_detected_items = 0
+    num_true_items = sum([len(loc) for loc in loc_lst])
+
     for image, loc in zip(image_lst, loc_lst):
-        framework.run(image, loc)
+        print image
+        correct_items, detected_items = framework.run(image, loc)
+        num_correct_items += correct_items
+        num_detected_items += detected_items
+
+    R_ir = num_correct_items / float(num_true_items)
+    P_ir = num_correct_items / float(num_detected_items)
+    perf_ir = 2* (P_ir * R_ir) / (P_ir + R_ir)
+    print "Performance of system: ", perf_ir
 

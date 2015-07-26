@@ -5,6 +5,7 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Contour Class
 """
+from .. import common as com
 import numpy as np
 import cv2
 
@@ -68,11 +69,14 @@ def findContours(image):
     conts, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     new_conts = []
     for c in conts:
-        cnt_len = cv2.arcLength(c, True)
-        cnt = cv2.approxPolyDP(c, 0.065 * cnt_len, True)
-        if cv2.isContourConvex(cnt):
+        cnt_len = cv2.arcLength(c, False)
+        cnt = cv2.approxPolyDP(c, 0.1 * cnt_len, True)
+        if cv2.contourArea(cnt) > 100 and cv2.isContourConvex(cnt):
             new_conts.append(c)
 
     conts = new_conts
     segments = [Contour(points_lst) for points_lst in conts]
+    # for con in segments:
+        # con.draw(image,(255, 0, 255), 1 )
+    # com.debug_im(image)
     return segments
