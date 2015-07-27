@@ -27,7 +27,6 @@ class GaussianAndOpening(Stage):
 
     def run(self, image):
         inp = image
-        # com.drawHist(image, 1)
         assert inp.size > 0
         # im = cv2.split(inp)[2]
         # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
@@ -51,7 +50,7 @@ class GaussianAndOpening(Stage):
         com.debug_im(image)
         com.debug_im(can)
         com.debug_im(thres)
-        return thres
+        return thres, can
 
 
 class SegmentStage(Stage):
@@ -66,7 +65,20 @@ class SegmentStage(Stage):
         return (( l.lt[0] < s.lt[0] and l.lt[1] < s.lt[1]) and (s.rb[0] <= l.rb[0] and s.rb[1] <= l.rb[1])) \
             or (( l.lt[0] <= s.lt[0] and l.lt[1] <= s.lt[1]) and (s.rb[0] < l.rb[0] and s.rb[1] < l.rb[1]))
 
-    def run(self, image, orig_image=None):
+    def calcHist(self, cont):
+        """ calculate the histogram of an image """
+        return cv2.calcHist([cont], [0], None, [256], [0, 256]).astype(int)
+
+    def filter_hist(self, contours, image):
+        """ remove segments not containing black blocks """
+        result = []
+        for cont in contours:
+            hist = self.calcHist(cont.get_region(image))
+            if (sum(hist[:100])[0] / float(sum(hist)[0])) > 0.3:
+                result.append(cont)
+        return result
+
+    def run(self, image, raw_image, orig_image=None):
         dist_tol = self.params["dist_tol"]
         wd_sz = self.params["wd_sz"]
         contours = cont.findContours(image)
@@ -83,8 +95,8 @@ class SegmentStage(Stage):
                 if con != c and com.euclid(c.center, con.center) < dist_tol:
                     filtered_contours.remove(c)
 
-
         contours = filtered_contours
+        contours = self.filter_hist(contours, raw_image)
         # if orig_image is not None:
             # for con in contours:
                 # con.draw(orig_image, (128, 0, 0), 1)

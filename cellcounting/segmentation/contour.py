@@ -52,6 +52,11 @@ class Contour(object):
         """ return the width of the rectangle bounding the contour """
         return abs(self.rb[1] - self.lt[1])
 
+    def get_region(self, image):
+        if type(image) is not np.ndarray:
+            raise TypeError("image must be a ndarray")
+        return image[self.lt[1]: self.rb[1], self.lt[0]: self.rb[0]]
+
     def __str__(self):
         return str(self.lt) + ":" + str(self.rb)
 
@@ -67,14 +72,14 @@ class Contour(object):
 def findContours(image):
     """ find all contours in an image """
     conts, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    new_conts = []
-    for c in conts:
-        cnt_len = cv2.arcLength(c, False)
-        cnt = cv2.approxPolyDP(c, 0.08 * cnt_len, True)
-        if cv2.contourArea(cnt) > 25: #and cv2.isContourConvex(cnt):
-            new_conts.append(c)
+    # new_conts = []
+    # for c in conts:
+        # cnt_len = cv2.arcLength(c, False)
+        # cnt = cv2.approxPolyDP(c, 0.08 * cnt_len, True)
+        # if cv2.contourArea(cnt) > 25: #and cv2.isContourConvex(cnt):
+            # new_conts.append(c)
 
-    conts = new_conts
+    # conts = new_conts
     segments = [Contour(points_lst) for points_lst in conts]
     # for con in segments:
         # con.draw(image,(255, 0, 255), 1 )

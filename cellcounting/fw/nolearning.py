@@ -38,8 +38,8 @@ class NoLearningFramework(object):
         if not isinstance(image, basestring):
             raise TypeError("The parameter image must be instance of basestring ")
         demo_img = self.imread(image, 1)
-        processed_img = self.preprocess(demo_img)
-        segments = self.segment(processed_img, demo_img)
+        processed_img, gray_img = self.preprocess(demo_img)
+        segments = self.segment(processed_img, gray_img, demo_img)
 
         correct = 0
         expected_nums = len(loc_list)
@@ -71,6 +71,6 @@ class NoLearningFramework(object):
         """ pre-process an image """
         return self._preprocess.run(image)
 
-    def segment(self, image, demo=None):
+    def segment(self, image, raw_image, demo=None):
         """ segment an image """
-        return self._segmentation.run(image, demo)
+        return self._segmentation.run(image, raw_image, demo)
