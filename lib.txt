@@ -1,0 +1,7 @@
+These libraries below are what you need to run my program:
+1. numpy
+2. opencv (version 2)
+3. skimage
+4. scipy
+5. pymorph
+6. matplotlib

@@ -35,3 +35,7 @@ class Stage(object):
         for def_key in self._default_params:
             if def_key not in self.params:
                 self.params[def_key] = self._default_params[def_key]
+
+    def set_param(self, param, value):
+        """ set a value for the parameter """
+        self.params[param] = value

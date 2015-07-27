@@ -61,8 +61,9 @@ class NoLearningFramework(object):
                     loc_list.remove(point)
                     correct += 1
 
-            # com.debug_im(demo_img, True)
+            com.debug_im(demo_img, True)
         print "The number of expected cells: ", expected_nums
+        print "The number of cells counting by the program:", len(segments)
         print "The number of true counting cells: ", correct
         return correct, len(segments)
 

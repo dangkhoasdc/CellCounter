@@ -70,8 +70,8 @@ def findContours(image):
     new_conts = []
     for c in conts:
         cnt_len = cv2.arcLength(c, False)
-        cnt = cv2.approxPolyDP(c, 0.1 * cnt_len, True)
-        if cv2.contourArea(cnt) > 100 and cv2.isContourConvex(cnt):
+        cnt = cv2.approxPolyDP(c, 0.08 * cnt_len, True)
+        if cv2.contourArea(cnt) > 25: #and cv2.isContourConvex(cnt):
             new_conts.append(c)
 
     conts = new_conts

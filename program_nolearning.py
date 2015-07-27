@@ -8,14 +8,14 @@ Description: Program version 2
 import cv2
 import numpy as np
 import sys
-from skimage.feature import local_binary_pattern as lbp
 from cellcounting.stage import Stage
 from cellcounting.db import allidb
 from cellcounting.preprocessing import morph
 from cellcounting.segmentation import contour as cont
 from cellcounting.fw import nolearning
-from cellcounting.features.feature import Feature
 from cellcounting import common as com
+from skimage.morphology import disk
+from skimage.filters.rank import enhance_contrast, maximum
 
 class GaussianAndOpening(Stage):
     """ gaussian filter + opening """
@@ -26,19 +26,31 @@ class GaussianAndOpening(Stage):
               self).__init__("Gaussian and Opening operation", params)
 
     def run(self, image):
-        gaussian_sz = (self.params["wd_sz"], self.params["wd_sz"])
         inp = image
         # com.drawHist(image, 1)
         assert inp.size > 0
-        im = cv2.split(inp)[2]
-        can = cv2.adaptiveBilateralFilter(im, (25, 25), 500)
-        thres = cv2.Canny(can, 20, 300, L2gradient=True)
+        # im = cv2.split(inp)[2]
+        # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
+        im = cv2.split(inp)[1]
+        im = maximum(im, disk(1))
+        can = cv2.adaptiveBilateralFilter(im,
+                                          self.params["bilateral_kernel"],
+                                          self.params["sigma_color"])
+        can = enhance_contrast(can, disk(1))
+        sigma = 0.7
+        v = np.median(can)
+        lower = int(max(0, (1.0 - sigma) * v))
+        upper = int(max(255, (1.0 + sigma) * v))
+        thres = cv2.Canny(can, lower, upper, L2gradient=True)
         # thres = cv2.Canny(can, 10, 200)
         kernel_dilation = np.ones((3, 3), dtype=np.int8)
         kernel_erosion = np.ones((2, 2), dtype=np.uint8)
         thres = morph.dilate(thres, kernel_dilation, 4)
         thres = morph.erode(thres, kernel_erosion, 4)
         thres = morph.thinning(thres)
+        com.debug_im(image)
+        com.debug_im(can)
+        com.debug_im(thres)
         return thres
 
 
@@ -46,7 +58,7 @@ class SegmentStage(Stage):
     """ Segmentation algorithm """
     def __init__(self, wd_sz=None):
         params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 10, "dist_tol": 15}
+        self._default_params = {"wd_sz": 10, "dist_tol": 8}
         super(SegmentStage, self).__init__("findContours algorithm", params)
 
     def inside(self, l, s):
@@ -82,13 +94,15 @@ class SegmentStage(Stage):
         return contours
 
 
-if __name__ == '__main__':
-    print "Main Program"
+def run_program(param, param2):
+    """ run the program """
     scale = 1 / 6.0
     pre = GaussianAndOpening()
-    seg = SegmentStage(8)
+    seg = SegmentStage(5)
     framework = nolearning.NoLearningFramework(scale, pre, seg)
-
+    filter_kernel =(param, param)
+    pre.set_param("bilateral_kernel", filter_kernel)
+    pre.set_param("sigma_color", param2)
     try:
         ftrain = sys.argv[1]
     except:
@@ -109,9 +123,20 @@ if __name__ == '__main__':
         correct_items, detected_items = framework.run(image, loc)
         num_correct_items += correct_items
         num_detected_items += detected_items
+        cv2.destroyAllWindows()
 
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)
     perf_ir = 2* (P_ir * R_ir) / (P_ir + R_ir)
-    print "Performance of system: ", perf_ir
+    return perf_ir
 
+if __name__ == '__main__':
+    print "Main Program"
+    f = open("auto_canny.csv", "w")
+    # sigma_range = np.logspace(2, 10, num=15, base=2)
+    # sigma_range = [int(num) if int(num) % 2 == 1 else int(num)+1 for num in sigma_range]
+    # for i in sigma_range:
+    result = run_program(9, 200)
+    print result
+    f.write(str(result) + ",")
+    f.close()
