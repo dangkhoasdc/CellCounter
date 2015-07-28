@@ -1,3 +1,5 @@
 * Research note
     With touching cells: use watershed algorithm to segment these cells
+* Issue: Could not count cells in images from Im048 to Im063
+** The problem comes from histogram filter in the segmentation stage.
 
