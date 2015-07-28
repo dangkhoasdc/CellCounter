@@ -1,8 +1,3 @@
-* Programming notes
-  Preprocessing class and Segmentation class have a same architecture. Hence,
-  we can merge them into just one class: Stage.
-** There are 3 different colors in an input image:
-   1. pink: we do not care about this celllight purple and
-   2. light purple: this is may be a ALL cell.
-   3. purple: this is a ALL cell.
-* TODO Implement multilevel Otsu thresholding
+* Research note
+    With touching cells: use watershed algorithm to segment these cells
+

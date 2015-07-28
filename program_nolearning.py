@@ -25,31 +25,29 @@ class GaussianAndOpening(Stage):
         super(GaussianAndOpening,
               self).__init__("Gaussian and Opening operation", params)
 
-    def run(self, image):
+    def run(self, image, visualize):
         inp = image
         assert inp.size > 0
         # im = cv2.split(inp)[2]
-        # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
-        im = cv2.split(inp)[1]
+        im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
+        # im = cv2.split(inp)[2]
         im = maximum(im, disk(1))
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],
                                           self.params["sigma_color"])
         can = enhance_contrast(can, disk(1))
-        sigma = 0.7
-        v = np.median(can)
-        lower = int(max(0, (1.0 - sigma) * v))
-        upper = int(max(255, (1.0 + sigma) * v))
-        thres = cv2.Canny(can, lower, upper, L2gradient=True)
-        # thres = cv2.Canny(can, 10, 200)
-        kernel_dilation = np.ones((3, 3), dtype=np.int8)
-        kernel_erosion = np.ones((2, 2), dtype=np.uint8)
+        can = maximum(can, disk(1))
+        thres = cv2.Canny(can, 0, 250, L2gradient=True)
+        kernel_dilation = np.ones((2, 2), dtype=np.int8)
+        kernel_erosion = np.ones((1, 1), dtype=np.uint8)
         thres = morph.dilate(thres, kernel_dilation, 4)
         thres = morph.erode(thres, kernel_erosion, 4)
-        thres = morph.thinning(thres)
-        com.debug_im(image)
-        com.debug_im(can)
-        com.debug_im(thres)
+        thres = morph.thinning(thres,theta=45)
+        # thres = morph.skelm(thres)
+        if visualize:
+            com.debug_im(image)
+            com.debug_im(can)
+            com.debug_im(thres)
         return thres, can
 
 
@@ -78,7 +76,7 @@ class SegmentStage(Stage):
                 result.append(cont)
         return result
 
-    def run(self, image, raw_image, orig_image=None):
+    def run(self, image, raw_image, orig_image, visualize):
         dist_tol = self.params["dist_tol"]
         wd_sz = self.params["wd_sz"]
         contours = cont.findContours(image)
@@ -97,12 +95,11 @@ class SegmentStage(Stage):
 
         contours = filtered_contours
         contours = self.filter_hist(contours, raw_image)
-        # if orig_image is not None:
-            # for con in contours:
-                # con.draw(orig_image, (128, 0, 0), 1)
-                # print con.width, con.height
+        if visualize:
+            for con in contours:
+                con.draw(orig_image, (128, 0, 0), 1)
 
-            # com.debug_im(orig_image, False)
+            com.debug_im(orig_image, False)
         return contours
 
 
@@ -132,14 +129,14 @@ def run_program(param, param2):
 
     for image, loc in zip(image_lst, loc_lst):
         print image
-        correct_items, detected_items = framework.run(image, loc)
+        correct_items, detected_items = framework.run(image, loc, visualize=True)
         num_correct_items += correct_items
         num_detected_items += detected_items
         cv2.destroyAllWindows()
 
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)
-    perf_ir = 2* (P_ir * R_ir) / (P_ir + R_ir)
+    perf_ir = 2 * (P_ir * R_ir) / (P_ir + R_ir)
     return perf_ir
 
 if __name__ == '__main__':

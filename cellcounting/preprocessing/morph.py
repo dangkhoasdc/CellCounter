@@ -94,14 +94,26 @@ def thinningIter(im, iter):
     return im & ~marker
 
 
-def thinning(img, iters=-1):
+def thinning(img, iters=-1, theta=45):
     """ thinning morphological operation """
     # convert to binary
     assert len(img.shape) == 2
 
     bin_img = pymorph.binary(img)
 
-    result = pymorph.thin(bin_img, n=iters)
+    result = pymorph.thin(bin_img, n=iters, theta=theta)
+
+    return pymorph.gray(result)
+
+def skelm(img, mask=None):
+    """skeleton operation """
+
+    assert len(img.shape) == 2
+    bin_img = pymorph.binary(img)
+    if mask == None:
+        result = pymorph.skelm(bin_img)
+    else:
+        result = pymorph.skelm(bin_img, mask)
 
     return pymorph.gray(result)
 
