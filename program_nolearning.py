@@ -29,23 +29,23 @@ class GaussianAndOpening(Stage):
         inp = image
         assert inp.size > 0
         # im = cv2.split(inp)[2]
-        # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
-        im = cv2.split(inp)[1]
+        im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
+        # im = cv2.split(inp)[1]
         im = maximum(im, disk(1))
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],
                                           self.params["sigma_color"])
         can = enhance_contrast(can, disk(1))
+        can = maximum(can, disk(1))
         sigma = 0.7
         v = np.median(can)
         lower = int(max(0, (1.0 - sigma) * v))
         upper = int(max(255, (1.0 + sigma) * v))
         thres = cv2.Canny(can, lower, upper, L2gradient=True)
-        # thres = cv2.Canny(can, 10, 200)
-        kernel_dilation = np.ones((3, 3), dtype=np.int8)
-        kernel_erosion = np.ones((2, 2), dtype=np.uint8)
-        thres = morph.dilate(thres, kernel_dilation, 4)
-        thres = morph.erode(thres, kernel_erosion, 4)
+        kernel_dilation = np.ones((2, 2), dtype=np.int8)
+        kernel_erosion = np.ones((1, 1), dtype=np.uint8)
+        thres = morph.dilate(thres, kernel_dilation, 6)
+        thres = morph.erode(thres, kernel_erosion, 6)
         thres = morph.thinning(thres)
         com.debug_im(image)
         com.debug_im(can)
@@ -74,7 +74,7 @@ class SegmentStage(Stage):
         result = []
         for cont in contours:
             hist = self.calcHist(cont.get_region(image))
-            if (sum(hist[:100])[0] / float(sum(hist)[0])) > 0.3:
+            if (sum(hist[:120])[0] / float(sum(hist)[0])) > 0.3:
                 result.append(cont)
         return result
 
