@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 from cellcounting.stage import Stage
 from cellcounting.segmentation import contour as cont
+from cellcounting.segmentation.watershed import watershed
 from cellcounting import common as com
 
 
@@ -43,9 +44,20 @@ class SegmentStage(Stage):
         dist_tol = self.params["dist_tol"]
         wd_sz = self.params["wd_sz"]
         contours = cont.findContours(image)
+        # remove too small segments
         contours = [con for con in contours if con.width > wd_sz and con.height > wd_sz]
-        filtered_contours = []
+        # with large segments, apply watershed segmentation algorithm
 
+        filtered_contours = []
+        for c in contours:
+            if c.width > 35 or c.height > 35:
+                segments = watershed(c.get_region(raw_image))
+                if len(segments) != 0:
+                    filtered_contours.extend(segments)
+            else:
+                filtered_contours.append(c)
+        contours = filtered_contours
+        filtered_contours = []
         for con in contours:
             result = any([self.inside(con, s) for s in contours if s != con])
             if not result:

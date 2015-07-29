@@ -6,31 +6,21 @@ Github: dangkhoasdc
 Description: Program version 2
 """
 import cv2
-import numpy as np
 import sys
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
-from cellcounting.stage import Stage
 from cellcounting.db import allidb
-from cellcounting.preprocessing import morph
-from cellcounting.segmentation import contour as cont
 from cellcounting.fw import nolearning
-from cellcounting import common as com
-from skimage.morphology import disk
-import skimage.filters.rank as rank
-from skimage.color import rgb2hed
-from skimage.restoration import denoise_tv_bregman
-from skimage.util import img_as_ubyte
-from skimage.exposure import rescale_intensity
 
 
 def run_program(param, param2):
     """ run the program """
+
     scale = 1 / 6.0
     pre = HedBilateralFilter()
     seg = SegmentStage(5)
     framework = nolearning.NoLearningFramework(scale, pre, seg)
-    filter_kernel =(param, param)
+    filter_kernel = (param, param)
     pre.set_param("bilateral_kernel", filter_kernel)
     pre.set_param("sigma_color", param2)
 
@@ -51,7 +41,10 @@ def run_program(param, param2):
 
     for image, loc in zip(image_lst, loc_lst):
         print image
-        correct_items, detected_items = framework.run(image, loc, visualize=False)
+        correct_items, detected_items = framework.run(image,
+                                                      loc,
+                                                      visualize=True)
+
         num_correct_items += correct_items
         num_detected_items += detected_items
         cv2.destroyAllWindows()
@@ -63,7 +56,7 @@ def run_program(param, param2):
 
 if __name__ == '__main__':
     print "Main Program"
-    f = open("auto_canny.csv", "w")
+    f = open("experiments/auto_canny.csv", "w")
     result = run_program(11, 200)
     print result
     f.write(str(result) + ",")
