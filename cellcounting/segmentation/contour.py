@@ -81,7 +81,4 @@ def findContours(image):
 
     # conts = new_conts
     segments = [Contour(points_lst) for points_lst in conts]
-    # for con in segments:
-        # con.draw(image,(255, 0, 255), 1 )
-    # com.debug_im(image)
     return segments

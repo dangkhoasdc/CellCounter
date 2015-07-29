@@ -6,13 +6,12 @@ Github: dangkhoasdc
 Description: Program version 2
 """
 import cv2
-import numpy as np
 import sys
-from cellcounting.stage import Stage
+from hed_bilateral import HedBilateralFilter
+from segment_hist import SegmentStage
 from cellcounting.db import allidb
-from cellcounting.preprocessing import morph
-from cellcounting.segmentation import contour as cont
 from cellcounting.fw import nolearning
+<<<<<<< HEAD
 from cellcounting import common as com
 from skimage.morphology import disk
 from skimage.filters.rank import enhance_contrast, maximum
@@ -104,17 +103,21 @@ class SegmentStage(Stage):
 
             # com.debug_im(orig_image, False)
         return contours
+=======
+>>>>>>> e825e7ff5c0d4ed594fb9dfc8c1a4f3cdb706254
 
 
 def run_program(param, param2):
     """ run the program """
+
     scale = 1 / 6.0
-    pre = GaussianAndOpening()
+    pre = HedBilateralFilter()
     seg = SegmentStage(5)
     framework = nolearning.NoLearningFramework(scale, pre, seg)
-    filter_kernel =(param, param)
+    filter_kernel = (param, param)
     pre.set_param("bilateral_kernel", filter_kernel)
     pre.set_param("sigma_color", param2)
+
     try:
         ftrain = sys.argv[1]
     except:
@@ -132,23 +135,23 @@ def run_program(param, param2):
 
     for image, loc in zip(image_lst, loc_lst):
         print image
-        correct_items, detected_items = framework.run(image, loc)
+        correct_items, detected_items = framework.run(image,
+                                                      loc,
+                                                      visualize=True)
+
         num_correct_items += correct_items
         num_detected_items += detected_items
         cv2.destroyAllWindows()
 
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)
-    perf_ir = 2* (P_ir * R_ir) / (P_ir + R_ir)
+    perf_ir = 2 * (P_ir * R_ir) / (P_ir + R_ir)
     return perf_ir
 
 if __name__ == '__main__':
     print "Main Program"
-    f = open("auto_canny.csv", "w")
-    # sigma_range = np.logspace(2, 10, num=15, base=2)
-    # sigma_range = [int(num) if int(num) % 2 == 1 else int(num)+1 for num in sigma_range]
-    # for i in sigma_range:
-    result = run_program(9, 200)
+    f = open("experiments/auto_canny.csv", "w")
+    result = run_program(11, 200)
     print result
     f.write(str(result) + ",")
     f.close()
