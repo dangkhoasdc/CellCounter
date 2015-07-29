@@ -16,7 +16,7 @@ from cellcounting.fw import nolearning
 from cellcounting import common as com
 from skimage.morphology import disk
 from skimage.filters.rank import enhance_contrast, maximum, minimum
-from skimage.filters import denoise_tv_bregman
+from skimage.restoration import denoise_tv_bregman
 
 class GaussianAndOpening(Stage):
     """ gaussian filter + opening """
@@ -29,16 +29,14 @@ class GaussianAndOpening(Stage):
     def run(self, image, visualize):
         inp = image
         assert inp.size > 0
-        # im = cv2.split(inp)[2]
-        # im = cv2.cvtColor(inp, cv2.COLOR_RGB2GRAY)
         im = cv2.split(inp)[2]
         for _ in range(6):
             im = enhance_contrast(im, disk(1))
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],
                                           self.params["sigma_color"])
-        can = enhance_contrast(can, disk(1))
         can = denoise_tv_bregman(can.astype(float), 2).astype(np.uint8)
+        can = enhance_contrast(can, disk(2))
         # can = maximum(can, disk(1))
         thres = cv2.Canny(can, 0, 250)
         kernel_dilation = np.ones((2, 2), dtype=np.int8)
@@ -76,7 +74,7 @@ class SegmentStage(Stage):
         for cont in contours:
             hist = self.calcHist(cont.get_region(image))
             sum_hist = float(np.sum(hist))
-            if np.sum(hist[:130])/float(np.sum(hist[130:])) >= 0.5:
+            if np.sum(hist[:95])/sum_hist >= 0.2:
                 result.append(cont)
         return result
 
