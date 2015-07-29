@@ -81,8 +81,4 @@ def findContours(image):
 
     # conts = new_conts
     segments = [Contour(points_lst) for points_lst in conts]
-    demo = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-    for con in segments:
-        con.draw(demo,(128, 0, 128), 1 )
-    com.debug_im(demo)
     return segments

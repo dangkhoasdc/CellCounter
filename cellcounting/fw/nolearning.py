@@ -38,8 +38,8 @@ class NoLearningFramework(object):
         if not isinstance(image, basestring):
             raise TypeError("The parameter image must be instance of basestring ")
         demo_img = self.imread(image, 1)
-        processed_img, gray_img = self.preprocess(demo_img, visualize)
-        segments = self.segment(processed_img, gray_img, demo_img, visualize)
+        processed_img, gray_img = self.preprocess(demo_img)
+        segments = self.segment(processed_img, gray_img, demo_img)
 
         correct = 0
         expected_nums = len(loc_list)
@@ -62,17 +62,19 @@ class NoLearningFramework(object):
                     loc_list.remove(point)
                     correct += 1
 
-            com.debug_im(demo_img, True)
         if visualize:
             print "The number of expected cells: ", expected_nums
             print "The number of cells counting by the program:", len(segments)
             print "The number of true counting cells: ", correct
+
+            com.debug_im(gray_img)
+            com.debug_im(demo_img, True)
         return correct, len(segments)
 
-    def preprocess(self, image, visualize):
+    def preprocess(self, image):
         """ pre-process an image """
-        return self._preprocess.run(image, visualize)
+        return self._preprocess.run(image)
 
-    def segment(self, image, raw_image, demo, visualize):
+    def segment(self, image, raw_image, demo):
         """ segment an image """
-        return self._segmentation.run(image, raw_image, demo, visualize)
+        return self._segmentation.run(image, raw_image, demo)
