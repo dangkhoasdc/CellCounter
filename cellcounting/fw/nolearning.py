@@ -33,7 +33,7 @@ class NoLearningFramework(object):
         im = cv2.resize(im, (width, height))
         return im
 
-    def run(self, image, loc_list):
+    def run(self, image, loc_list, visualize=False):
         """ run this framework """
         if not isinstance(image, basestring):
             raise TypeError("The parameter image must be instance of basestring ")
@@ -53,7 +53,8 @@ class NoLearningFramework(object):
             for seg in segments:
                 if len(loc_list) == 0:
                     break
-                seg.draw(demo_img, (255, 255, 0), 1)
+                if visualize:
+                    seg.draw(demo_img, (255, 255, 0), 1)
 
                 point, value = com.nearest_point(seg.center, loc_list)
 
@@ -61,16 +62,19 @@ class NoLearningFramework(object):
                     loc_list.remove(point)
                     correct += 1
 
+        if visualize:
+            print "The number of expected cells: ", expected_nums
+            print "The number of cells counting by the program:", len(segments)
+            print "The number of true counting cells: ", correct
+
+            com.debug_im(gray_img)
             com.debug_im(demo_img, True)
-        print "The number of expected cells: ", expected_nums
-        print "The number of cells counting by the program:", len(segments)
-        print "The number of true counting cells: ", correct
         return correct, len(segments)
 
     def preprocess(self, image):
         """ pre-process an image """
         return self._preprocess.run(image)
 
-    def segment(self, image, raw_image, demo=None):
+    def segment(self, image, raw_image, demo):
         """ segment an image """
         return self._segmentation.run(image, raw_image, demo)
