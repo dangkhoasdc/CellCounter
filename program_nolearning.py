@@ -15,8 +15,11 @@ from cellcounting.segmentation import contour as cont
 from cellcounting.fw import nolearning
 from cellcounting import common as com
 from skimage.morphology import disk
-from skimage.filters.rank import enhance_contrast, maximum, minimum
+import skimage.filters.rank as rank
+from skimage.color import rgb2hed
 from skimage.restoration import denoise_tv_bregman
+from skimage.util import img_as_ubyte
+from skimage.exposure import rescale_intensity
 
 class GaussianAndOpening(Stage):
     """ gaussian filter + opening """
@@ -27,23 +30,18 @@ class GaussianAndOpening(Stage):
               self).__init__("Gaussian and Opening operation", params)
 
     def run(self, image, visualize):
-        inp = image
-        assert inp.size > 0
-        im = cv2.split(inp)[2]
-        for _ in range(6):
-            im = enhance_contrast(im, disk(1))
+        assert image.size > 0
+        im = img_as_ubyte(1.0 - cv2.split(rgb2hed(image))[1])
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],
                                           self.params["sigma_color"])
-        can = denoise_tv_bregman(can.astype(float), 2).astype(np.uint8)
-        can = enhance_contrast(can, disk(2))
-        # can = maximum(can, disk(1))
-        thres = cv2.Canny(can, 0, 250)
+        can = rescale_intensity(can)
+        thres = cv2.Canny(can, 0, 300)
         kernel_dilation = np.ones((2, 2), dtype=np.int8)
         kernel_erosion = np.ones((1, 1), dtype=np.uint8)
         thres = morph.dilate(thres, kernel_dilation, 4)
         thres = morph.erode(thres, kernel_erosion, 2)
-        thres = morph.thinning(thres,theta=45)
+        thres = morph.thinning(thres,theta=15)
         # thres = morph.skelm(thres)
         if visualize:
             com.debug_im(image)
