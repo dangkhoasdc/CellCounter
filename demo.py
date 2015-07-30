@@ -5,6 +5,7 @@ from scipy import ndimage as ndi
 from skimage.morphology import watershed
 from skimage.feature import peak_local_max
 
+np.set_printoptions(threshold=np.nan)
 
 # Generate an initial image with two overlapping circles
 x, y = np.indices((80, 80))
@@ -17,6 +18,7 @@ image = np.logical_or(mask_circle1, mask_circle2)
 # Now we want to separate the two objects in image
 # Generate the markers as local maxima of the distance to the background
 distance = ndi.distance_transform_edt(image)
+print distance
 local_maxi = peak_local_max(distance, indices=False, footprint=np.ones((3, 3)),
                             labels=image)
 markers = ndi.label(local_maxi)[0]
@@ -27,7 +29,7 @@ ax0, ax1, ax2 = axes
 
 ax0.imshow(image, cmap=plt.cm.gray, interpolation='nearest')
 ax0.set_title('Overlapping objects')
-ax1.imshow(-distance, cmap=plt.cm.jet, interpolation='nearest')
+ax1.imshow(-local_maxi, cmap=plt.cm.jet, interpolation='nearest')
 ax1.set_title('Distances')
 ax2.imshow(labels, cmap=plt.cm.spectral, interpolation='nearest')
 ax2.set_title('Separated objects')

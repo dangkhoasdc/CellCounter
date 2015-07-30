@@ -7,9 +7,11 @@ Description: Helper functions for Cell Counting program
 """
 import numpy as np
 import scipy.spatial.distance as dist
+import matplotlib.cm as cm
 import cv2
 from matplotlib import pyplot as plt
 import random
+from matplotlib import pyplot as plt
 
 
 def euclid(p1, p2):
@@ -52,10 +54,8 @@ def nearest_point(value, point_lst):
 
 def debug_im(image, wait=False):
     """ debug an image """
-    code = random.random()
-    window_name = "Debug " + str(code)
-    cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
-    cv2.imshow(window_name, image)
-    cv2.waitKey(0)
-    if wait:
-        cv2.destroyAllWindows()
+    if len(image.shape) == 2:
+        plt_im = plt.imshow(image, cmap=cm.Greys_r)
+    else:
+        plt_im = plt.imshow(image)
+    plt.show()

@@ -10,10 +10,16 @@ import cv2
 from cellcounting.segmentation.contour import Contour
 import cellcounting.common as com
 from skimage.morphology import watershed as ws
-from skimage.morphology import erosion, disk
+from skimage.morphology import dilation, erosion, disk
+from skimage.util import img_as_bool, img_as_ubyte
 from skimage.feature import peak_local_max
+from skimage.exposure import rescale_intensity
+from skimage.filters.rank import maximum
+from skimage.restoration import denoise_bilateral
+from cellcounting.preprocessing import morph
 from scipy import ndimage as ndi
 from matplotlib import pyplot as plt
+
 np.set_printoptions(threshold=np.nan)
 
 
@@ -22,29 +28,42 @@ def watershed(image):
     if len(image.shape) != 2:
         raise TypeError("The input image must be gray-scale ")
 
-    # thresholding
-    _, thres = cv2.threshold(image, 0, 255,
-                             cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    thres = erosion(thres, disk(3))
-    com.debug_im(thres)
+    h, w = image.shape
+    image = cv2.equalizeHist(image)
+    image = denoise_bilateral(image, sigma_range=0.1, sigma_spatial=10)
+    image = img_as_ubyte(image)
+    image = rescale_intensity(image)
+    # com.debug_im(image)
+
+    _, thres = cv2.threshold(image, 80, 255, cv2.THRESH_BINARY_INV)
+
+    # com.debug_im(thres)
     distance = ndi.distance_transform_edt(thres)
     local_maxi = peak_local_max(distance, indices=False,
-                                footprint=np.ones((2, 2)),
-                                labels=thres)
+                                labels=thres,
+                                min_distance=5)
 
-    implt = plt.imshow(-local_maxi, cmap=plt.cm.jet, interpolation='nearest')
-    plt.show()
-    markers = ndi.label(local_maxi)[0]
-    print markers
+    # implt = plt.imshow(-distance, cmap=plt.cm.jet, interpolation='nearest')
+    # plt.show()
 
+    markers = ndi.label(local_maxi, np.ones((3, 3)))[0]
     labels = ws(-distance, markers, mask=thres)
     labels = np.uint8(labels)
-    contours, _ = cv2.findContours(labels,
-                                   cv2.RETR_LIST,
-                                   cv2.CHAIN_APPROX_SIMPLE)
+    # result = np.round(255.0 / np.amax(labels) * labels).astype(np.uint8)
+    # com.debug_im(result)
 
-    segments = [Contour(points_lst) for points_lst in contours]
-    for s in segments:
-        s.draw(image, (255, 255, 0), 1)
-    com.debug_im(image)
+    segments = []
+    for idx in range(1, np.amax(labels) + 1):
+
+        indices = np.where(labels == idx)
+        left = np.amin(indices[1])
+        right = np.amax(indices[1])
+        top = np.amin(indices[0])
+        down = np.amax(indices[0])
+
+        cont = Contour()
+        cont.lt = [left, top]
+        cont.rb = [right, down]
+        segments.append(cont)
+
     return segments

@@ -18,7 +18,7 @@ class SegmentStage(Stage):
     """ Segmentation algorithm """
     def __init__(self, wd_sz=None):
         params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 10, "dist_tol": 8}
+        self._default_params = {"wd_sz": 20, "dist_tol": 8}
         super(SegmentStage, self).__init__("findContours algorithm", params)
 
     def inside(self, l, s):
@@ -45,7 +45,6 @@ class SegmentStage(Stage):
         wd_sz = self.params["wd_sz"]
         contours = cont.findContours(image)
         # remove too small segments
-        contours = [con for con in contours if con.width > wd_sz and con.height > wd_sz]
         # with large segments, apply watershed segmentation algorithm
 
         filtered_contours = []
@@ -53,21 +52,27 @@ class SegmentStage(Stage):
             if c.width > 35 or c.height > 35:
                 segments = watershed(c.get_region(raw_image))
                 if len(segments) != 0:
+                    for s in segments:
+                        s.lt[0] += c.lt[0]
+                        s.lt[1] += c.lt[1]
+                        s.rb[0] += c.lt[0]
+                        s.rb[1] += c.lt[1]
                     filtered_contours.extend(segments)
             else:
                 filtered_contours.append(c)
         contours = filtered_contours
-        filtered_contours = []
-        for con in contours:
-            result = any([self.inside(con, s) for s in contours if s != con])
-            if not result:
-                filtered_contours.append(con)
+        # filtered_contours = []
+        # for con in contours:
+            # result = any([self.inside(con, s) for s in contours if s != con])
+            # if not result:
+                # filtered_contours.append(con)
 
-        for con in filtered_contours:
-            for c in filtered_contours:
-                if con != c and com.euclid(c.center, con.center) < dist_tol:
-                    filtered_contours.remove(c)
+        # for con in filtered_contours:
+            # for c in filtered_contours:
+                # if con != c and com.euclid(c.center, con.center) < dist_tol:
+                    # filtered_contours.remove(c)
 
-        contours = filtered_contours
+        # contours = filtered_contours
+        contours = [con for con in contours if (con.width > wd_sz or con.height > wd_sz) and (con.width/float(con.height) > 0.8)]
         contours = self.filter_hist(contours, raw_image)
         return contours

@@ -12,11 +12,12 @@ import cv2
 
 class Contour(object):
     """Contour Class: The returned result of segmentation method """
-    def __init__(self, points_lst):
+    def __init__(self, points_lst=None):
         """constructor"""
-        lefttop, rightbottom = Contour.boundary(points_lst)
-        self.lt = lefttop
-        self.rb = rightbottom
+        if points_lst != None:
+            lefttop, rightbottom = Contour.boundary(points_lst)
+            self.lt = lefttop
+            self.rb = rightbottom
 
     def draw(self, image, color, thickness=None, ):
         """ draw a rectangle bounding the contour """
@@ -24,7 +25,7 @@ class Contour(object):
         assert type(color) is tuple and len(color) == 3
         if thickness is None:
             thickness = 1
-        cv2.rectangle(image, self.rb, self.lt, color, thickness)
+        cv2.rectangle(image, tuple(self.rb), tuple(self.lt), color, thickness)
 
     @staticmethod
     def boundary(points_lst):
@@ -33,7 +34,7 @@ class Contour(object):
         right = tuple(points_lst[points_lst[:, :, 0].argmax()][0])
         top = tuple(points_lst[points_lst[:, :, 1].argmin()][0])
         bottom = tuple(points_lst[points_lst[:, :, 1].argmax()][0])
-        return [(left[0], top[1]), (right[0], bottom[1])]
+        return [[left[0], top[1]], [right[0], bottom[1]]]
 
     @property
     def center(self):
