@@ -57,7 +57,7 @@ def run_program(param, param2):
 if __name__ == '__main__':
     print "Main Program"
     f = open("experiments/auto_canny.csv", "w")
-    result = run_program(11, 200)
+    result = run_program(11, 11)
     print result
     f.write(str(result) + ",")
     f.close()

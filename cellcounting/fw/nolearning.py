@@ -44,6 +44,10 @@ class NoLearningFramework(object):
         correct = 0
         expected_nums = len(loc_list)
         # if there is no segment in an image
+        if visualize:
+            for seg in segments:
+                seg.draw(demo_img, (0, 255, 0), 1)
+
         if len(loc_list) != 0:
         # if there are more than 1 segment in this image
         # visualize cells
@@ -68,6 +72,7 @@ class NoLearningFramework(object):
             print "The number of true counting cells: ", correct
 
             com.debug_im(gray_img)
+            com.debug_im(processed_img)
             com.debug_im(demo_img, True)
         return correct, len(segments)
 

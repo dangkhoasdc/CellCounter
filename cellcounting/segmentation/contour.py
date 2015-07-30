@@ -73,6 +73,7 @@ class Contour(object):
 def findContours(image):
     """ find all contours in an image """
     conts, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    # cv2.drawContours(demo, conts, -1, (255, 255, 0), 2)
     # new_conts = []
     # for c in conts:
         # cnt_len = cv2.arcLength(c, False)
