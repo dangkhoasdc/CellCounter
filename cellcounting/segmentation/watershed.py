@@ -37,12 +37,12 @@ def watershed(image):
 
     _, thres = cv2.threshold(image, 80, 255, cv2.THRESH_BINARY_INV)
 
-    # com.debug_im(thres)
     distance = ndi.distance_transform_edt(thres)
     local_maxi = peak_local_max(distance, indices=False,
                                 labels=thres,
                                 min_distance=5)
 
+    # com.debug_im(thres)
     # implt = plt.imshow(-distance, cmap=plt.cm.jet, interpolation='nearest')
     # plt.show()
 
