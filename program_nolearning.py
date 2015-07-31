@@ -17,7 +17,6 @@ from cellcounting.fw import nolearning
 def run_program(ftrain, param, param2, viz):
     """ run the program """
 
-    scale = 1 / 6.0
     pre = HedBilateralFilter()
     seg = SegmentStage(10)
     db = allidb.AllIdb()
@@ -31,7 +30,7 @@ def run_program(ftrain, param, param2, viz):
     file_train.close()
 
     image_lst = [line+".jpg" for line in row_lst]
-    loc_lst = [allidb.get_true_locs(line+".xyc", scale) for line in row_lst]
+    loc_lst = [allidb.get_true_locs(line+".xyc", db.scale_ratio) for line in row_lst]
     num_correct_items = 0
     num_detected_items = 0
     num_true_items = sum([len(loc) for loc in loc_lst])

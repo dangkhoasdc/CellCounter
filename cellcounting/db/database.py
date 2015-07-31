@@ -15,14 +15,11 @@ class Database(object):
             radius: the approximate radius of each cell
             tol: the distance between two centers of cells
     """
-    def __init__(self, name, orig_size, scale_ratio, radius, tol):
+    def __init__(self, name, scale_ratio, radius, tol):
         self.name = name
-        self.orig_size = orig_size
         self.scale_ratio = scale_ratio
         self.radius = radius
         self.tol = tol
-        self.size = (int(self.orig_size[0] * self.scale_ratio),
-                     int(self.orig_size[1] * self.scale_ratio))
 
     def __str__(self):
         return self.name

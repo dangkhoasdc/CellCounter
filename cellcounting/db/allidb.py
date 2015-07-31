@@ -9,20 +9,16 @@ import cv2
 from cellcounting.db.database import Database
 
 resize_width, resize_height = 432, 324
-ratio = 1.0/6
-tol = 18
 
 
 class AllIdb(Database):
     """ The All-IDB database """
     def __init__(self):
         self.name = "ALL-IDB 1"
-        self.orig_size = (2592, 1944)
         self.scale_ratio = 1/6.0
         self.tol = 7
         self.radius = 8
         super(AllIdb, self).__init__(self.name,
-                                     self.orig_size,
                                      self.scale_ratio,
                                      self.radius,
                                      self.tol)
@@ -44,7 +40,7 @@ def visualize_loc(img, points, wait=False):
         cv2.destroyAllWindows()
 
 
-def get_true_locs(fname, scale_ratio=ratio):
+def get_true_locs(fname, scale_ratio):
     """ Get a list of expected locations in xyc file """
 
     if fname[-4:] != ".xyc":
@@ -54,7 +50,8 @@ def get_true_locs(fname, scale_ratio=ratio):
     points = [tuple(map(int, loc.split())) for loc in f.readlines()]
     if len(points) == 0 or points[0] == ():
         return []
-    points = [(int(scale_ratio*p[0]), int(scale_ratio*p[1])) for p in points]
+    points = [(int(p[0] * scale_ratio),
+               int(p[1] * scale_ratio)) for p in points]
     return points
 
 

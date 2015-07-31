@@ -31,6 +31,7 @@ def watershed(image):
     h, w = image.shape
     image = cv2.equalizeHist(image)
     image = denoise_bilateral(image, sigma_range=0.1, sigma_spatial=10)
+    image = rescale_intensity(image)
     image = img_as_ubyte(image)
     image = rescale_intensity(image)
     # com.debug_im(image)

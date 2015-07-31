@@ -24,7 +24,10 @@ class NoLearningFramework(object):
         im = cv2.imread(fname, flags)
         if im is None:
             raise IOError("Could not load an image ", fname)
-        im = cv2.resize(im, (self._db.size[0], self._db.size[1]))
+        h, w = im.shape[:2]
+        w = int(self._db.scale_ratio * w)
+        h = int(self._db.scale_ratio * h)
+        im = cv2.resize(im, (w, h))
         return im
 
     def run(self, image, loc_list, visualize=False):
@@ -45,17 +48,15 @@ class NoLearningFramework(object):
                 seg.draw(demo_img, (0, 255, 0), 1)
 
         # if there are more than 1 segment in this image
-        if not loc_list:
+        draw_points = loc_list
+        if loc_list:
             # visualize true cells
-            for loc in loc_list:
-                cv2.circle(demo_img, loc, 2, (0, 255, 255), -1)
             # check if each segment is close to one true cell
             for seg in segments:
                 if len(loc_list) == 0:
                     break
 
                 point, value = com.nearest_point(seg.center, loc_list)
-
                 if value <= self._db.tol:
                     loc_list.remove(point)
                     correct += 1
@@ -63,6 +64,8 @@ class NoLearningFramework(object):
                         seg.draw(demo_img, (255, 255, 0), 1)
 
         if visualize:
+            for loc in draw_points:
+                cv2.circle(demo_img, loc, 2, (0, 255, 255), 1)
             print "The number of expected cells: ", expected_nums
             print "The number of cells counting by the program:", len(segments)
             print "The number of true counting cells: ", correct
