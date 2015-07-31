@@ -51,7 +51,6 @@ class SegmentStage(Stage):
         for c in contours:
             if c.width > 35 or c.height > 35:
                 segments = watershed(c.get_region(raw_image))
-                print len(segments)
                 if len(segments) != 0:
                     for s in segments:
                         s.lt[0] += c.lt[0]
@@ -65,17 +64,17 @@ class SegmentStage(Stage):
             else:
                 filtered_contours.append(c)
         contours = filtered_contours
-        # filtered_contours = []
-        # for con in contours:
-            # result = any([self.inside(con, s) for s in contours if s != con])
-            # if not result:
-                # filtered_contours.append(con)
+        contours = [con for con in contours if (con.width > wd_sz and con.height > wd_sz) and 1.5 > (con.width/float(con.height) > 0.5)]
+        filtered_contours = []
+        for con in contours:
+            result = any([self.inside(con, s) for s in contours if s != con])
+            if not result:
+                filtered_contours.append(con)
 
         # for con in filtered_contours:
             # for c in filtered_contours:
                 # if con != c and com.euclid(c.center, con.center) < dist_tol:
                     # filtered_contours.remove(c)
 
-        # contours = filtered_contours
-        contours = [con for con in contours if (con.width > wd_sz or con.height > wd_sz) and 1.5 > (con.width/float(con.height) > 0.5)]
+        contours = filtered_contours
         return contours

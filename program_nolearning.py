@@ -19,7 +19,7 @@ def run_program(ftrain, param, param2, viz):
 
     scale = 1 / 6.0
     pre = HedBilateralFilter()
-    seg = SegmentStage(3)
+    seg = SegmentStage(10)
     db = allidb.AllIdb()
     framework = nolearning.NoLearningFramework(db, pre, seg)
     filter_kernel = (param, param)

@@ -24,7 +24,6 @@ class NoLearningFramework(object):
         im = cv2.imread(fname, flags)
         if im is None:
             raise IOError("Could not load an image ", fname)
-        print self._db.size
         im = cv2.resize(im, (self._db.size[0], self._db.size[1]))
         return im
 
