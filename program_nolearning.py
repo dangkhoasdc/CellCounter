@@ -7,13 +7,14 @@ Description: Program version 2
 """
 import cv2
 import sys
+import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
 from cellcounting.fw import nolearning
 
 
-def run_program(param, param2):
+def run_program(ftrain, param, param2, viz):
     """ run the program """
 
     scale = 1 / 6.0
@@ -24,11 +25,6 @@ def run_program(param, param2):
     filter_kernel = (param, param)
     pre.set_param("bilateral_kernel", filter_kernel)
     pre.set_param("sigma_color", param2)
-
-    try:
-        ftrain = sys.argv[1]
-    except:
-        ftrain = "training.txt"
 
     file_train = open(ftrain, "r")
     row_lst = [line.strip() for line in file_train.readlines()]
@@ -44,7 +40,7 @@ def run_program(param, param2):
         print image
         correct_items, detected_items = framework.run(image,
                                                       loc,
-                                                      visualize=True)
+                                                      visualize=viz)
 
         num_correct_items += correct_items
         num_detected_items += detected_items
@@ -56,9 +52,24 @@ def run_program(param, param2):
     return perf_ir
 
 if __name__ == '__main__':
-    print "Main Program"
-    f = open("experiments/auto_canny.csv", "w")
-    result = run_program(11, 11)
+    ap = argparse.ArgumentParser()
+
+    ap.add_argument("-d", "--database", required=True,
+                    help="Path to the database file")
+    ap.add_argument("-o", "--output", help="Path to the result file")
+    ap.add_argument("-v", "--visualize", action="store_true",
+                    help="visualize data")
+
+    args = vars(ap.parse_args())
+    config_output = args["output"] is not None
+    db = args["database"]
+    viz = args["visualize"]
+    if config_output:
+        f = open(args["output"], "w")
+
+    result = run_program(db, 11, 11, viz)
     print result
-    f.write(str(result) + ",")
-    f.close()
+
+    if config_output:
+        f.write(str(result) + ",")
+        f.close()
