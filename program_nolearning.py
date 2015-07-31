@@ -19,7 +19,8 @@ def run_program(param, param2):
     scale = 1 / 6.0
     pre = HedBilateralFilter()
     seg = SegmentStage(3)
-    framework = nolearning.NoLearningFramework(scale, pre, seg)
+    db = allidb.AllIdb()
+    framework = nolearning.NoLearningFramework(db, pre, seg)
     filter_kernel = (param, param)
     pre.set_param("bilateral_kernel", filter_kernel)
     pre.set_param("sigma_color", param2)

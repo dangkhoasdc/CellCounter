@@ -6,10 +6,26 @@ Github: dangkhoasdc
 Description: Helper function of All-IDB database
 """
 import cv2
+from cellcounting.db.database import Database
 
 resize_width, resize_height = 432, 324
 ratio = 1.0/6
 tol = 18
+
+
+class AllIdb(Database):
+    """ The All-IDB database """
+    def __init__(self):
+        self.name = "ALL-IDB 1"
+        self.orig_size = (2592, 1944)
+        self.scale_ratio = 1/6.0
+        self.tol = 7
+        self.radius = 8
+        super(AllIdb, self).__init__(self.name,
+                                     self.orig_size,
+                                     self.scale_ratio,
+                                     self.radius,
+                                     self.tol)
 
 
 def visualize_loc(img, points, wait=False):
