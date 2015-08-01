@@ -22,5 +22,6 @@ Run `python program_nolearing.py` for more detail about using this program.
 ## Examples
 
 `python program_nolearing.py -d training.txt -v`: count all images which are located in file `training.txt` and visualize the result.
+
 `python program_nolearing.py -d training.txt -o result.txt`: count all images which are located in file `training.txt` and write the result to file `result.txt` 
 
