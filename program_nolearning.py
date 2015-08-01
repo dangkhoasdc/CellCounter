@@ -43,7 +43,6 @@ def run_program(ftrain, param, param2, viz):
 
         num_correct_items += correct_items
         num_detected_items += detected_items
-        cv2.destroyAllWindows()
 
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)

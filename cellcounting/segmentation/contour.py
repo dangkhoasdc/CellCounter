@@ -67,6 +67,12 @@ class Contour(object):
             and self.rb[0] == other.rb[0] \
             and self.rb[1] == other.rb[1] \
 
+    def __key(self):
+        return (self.lt[0], self.lt[1], self.rb[0], self.rb[1])
+
+    def __hash__(self):
+        return hash(self.__key())
+
 
 
 

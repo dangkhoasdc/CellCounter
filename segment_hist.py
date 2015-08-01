@@ -63,6 +63,7 @@ class SegmentStage(Stage):
                     filtered_contours.append(c)
             else:
                 filtered_contours.append(c)
+        filtered_contours = list(set(filtered_contours))
         contours = filtered_contours
         contours = [con for con in contours if (con.width > wd_sz and con.height > wd_sz) and 1.5 > (con.width/float(con.height) > 0.5)]
         filtered_contours = []
