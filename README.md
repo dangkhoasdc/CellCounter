@@ -17,11 +17,13 @@ The program automatically detects cells in the [ALL-IDB dataset](http://crema.di
 
 # Usage
 
-Run `python program_nolearing.py` for more detail about using this program. 
+Run `python program_nolearing.py -h` for more details about using the program. 
 
 ## Examples
 
 `python program_nolearing.py -d training.txt -v`: count all images which are located in file `training.txt` and visualize the result.
 
 `python program_nolearing.py -d training.txt -o result.txt`: count all images which are located in file `training.txt` and write the result to file `result.txt` 
+
+To load data from `training.txt` or `problem.txt`, you must download the dataset and copy all images and xyc files into folder *data*. Because of the copyright of the dataset, I can not make a copy version in this repository.
 
