@@ -18,7 +18,7 @@ class SegmentStage(Stage):
     """ Segmentation algorithm """
     def __init__(self, wd_sz=None):
         params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 20, "dist_tol": 8}
+        self._default_params = {"wd_sz": 20, "dist_tol": 5}
         super(SegmentStage, self).__init__("findContours algorithm", params)
 
     def inside(self, l, s):
@@ -43,13 +43,14 @@ class SegmentStage(Stage):
     def run(self, image, raw_image, orig_image):
         dist_tol = self.params["dist_tol"]
         wd_sz = self.params["wd_sz"]
+        h, w = raw_image.shape
         contours = cont.findContours(image)
         # remove too small segments
         # with large segments, apply watershed segmentation algorithm
 
         filtered_contours = []
         for c in contours:
-            if c.width > 35 or c.height > 35:
+            if c.width > 27 or c.height > 27:
                 segments = watershed(c.get_region(raw_image))
                 if len(segments) != 0:
                     for s in segments:
@@ -63,19 +64,23 @@ class SegmentStage(Stage):
                     filtered_contours.append(c)
             else:
                 filtered_contours.append(c)
-        filtered_contours = list(set(filtered_contours))
-        contours = filtered_contours
-        contours = [con for con in contours if (con.width > wd_sz and con.height > wd_sz) and 1.5 > (con.width/float(con.height) > 0.5)]
+        contours = list(set(filtered_contours))
+        contours = [c for c in contours if (c.width >= wd_sz and c.height >= wd_sz) and (1.7 > (c.width/float(c.height)) > 0.4)]
+        contours = [c for c in contours if c.area >= 150]
+        contours = [c for c in contours if 6 < c.center[0] and 6 < c.center[1] and c.center[0] < w-6 and c.center[1] < h-6]
+        contours = [c for c in contours if 1 < c.lt[0] and 1 < c.lt[1] and c.rb[0] < w-1 and c.rb[1] < h-1]
+
+
+
+
+        for con in contours:
+            for c in contours:
+                if con != c and com.euclid(c.center, con.center) < dist_tol:
+                    contours.remove(c)
+
         filtered_contours = []
         for con in contours:
             result = any([self.inside(con, s) for s in contours if s != con])
             if not result:
                 filtered_contours.append(con)
-
-        # for con in filtered_contours:
-            # for c in filtered_contours:
-                # if con != c and com.euclid(c.center, con.center) < dist_tol:
-                    # filtered_contours.remove(c)
-
-        contours = filtered_contours
-        return contours
+        return filtered_contours

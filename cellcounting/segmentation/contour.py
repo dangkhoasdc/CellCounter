@@ -53,6 +53,11 @@ class Contour(object):
         """ return the width of the rectangle bounding the contour """
         return abs(self.rb[1] - self.lt[1])
 
+    @property
+    def area(self):
+        """ return the area of the segment """
+        return self.width * self.height
+
     def get_region(self, image):
         if type(image) is not np.ndarray:
             raise TypeError("image must be a ndarray")

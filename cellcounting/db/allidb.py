@@ -48,7 +48,9 @@ def get_true_locs(fname, scale_ratio):
 
     f = open(fname, "r")
     points = [tuple(map(int, loc.split())) for loc in f.readlines()]
-    if len(points) == 0 or points[0] == ():
+
+    points = [p for p in points if p != ()]
+    if len(points) == 0:
         return []
     points = [(int(p[0] * scale_ratio),
                int(p[1] * scale_ratio)) for p in points]

@@ -46,9 +46,10 @@ class NoLearningFramework(object):
         if visualize:
             for seg in segments:
                 seg.draw(demo_img, (0, 255, 0), 1)
+            for loc in loc_list:
+                cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
 
         # if there are more than 1 segment in this image
-        draw_points = loc_list
         if loc_list:
             # visualize true cells
             # check if each segment is close to one true cell
@@ -64,8 +65,6 @@ class NoLearningFramework(object):
                         seg.draw(demo_img, (255, 255, 0), 1)
 
         if visualize:
-            for loc in draw_points:
-                cv2.circle(demo_img, loc, 2, (0, 255, 255), 1)
             print "The number of expected cells: ", expected_nums
             print "The number of cells counting by the program:", len(segments)
             print "The number of true counting cells: ", correct
