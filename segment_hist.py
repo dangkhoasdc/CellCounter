@@ -65,19 +65,16 @@ class SegmentStage(Stage):
             else:
                 filtered_contours.append(c)
         contours = list(set(filtered_contours))
-        contours = [c for c in contours if (c.width >= wd_sz and c.height >= wd_sz) and (1.7 > (c.width/float(c.height)) > 0.4)]
-        contours = [c for c in contours if c.area >= 150]
-        contours = [c for c in contours if 6 < c.center[0] and 6 < c.center[1] and c.center[0] < w-6 and c.center[1] < h-6]
+        contours = [c for c in contours if (c.width >= wd_sz and c.height >= wd_sz) and (1.7 > (c.width/float(c.height)) >= 0.5)]
+        contours = [c for c in contours if c.area >= 140]
+        contours = [c for c in contours if 8 < c.center[0] and 8 < c.center[1] and c.center[0] < w-8 and c.center[1] < h-8]
         contours = [c for c in contours if 1 < c.lt[0] and 1 < c.lt[1] and c.rb[0] < w-1 and c.rb[1] < h-1]
-
-
-
 
         for con in contours:
             for c in contours:
                 if con != c and com.euclid(c.center, con.center) < dist_tol:
                     contours.remove(c)
-
+        contours = sorted(contours, key= lambda x: x.area, reverse=True)
         filtered_contours = []
         for con in contours:
             result = any([self.inside(con, s) for s in contours if s != con])
