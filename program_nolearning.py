@@ -65,7 +65,7 @@ if __name__ == '__main__':
     if config_output:
         f = open(args["output"], "w")
 
-    result = run_program(db, 11, 11, viz)
+    result = run_program(db, 7, 11, viz)
     print result
 
     if config_output:

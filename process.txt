@@ -1,8 +1,3 @@
-data/Im044_0
-data/Im045_0
-data/Im046_0
-data/Im047_0
-data/Im048_1
 data/Im049_1
 data/Im050_1
 data/Im051_1
