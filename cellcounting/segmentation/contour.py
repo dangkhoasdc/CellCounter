@@ -6,14 +6,16 @@ Github: dangkhoasdc
 Description: Contour Class
 """
 from .. import common as com
+from skimage.color import label2rgb
 import numpy as np
 import cv2
 
 
 class Contour(object):
     """Contour Class: The returned result of segmentation method """
-    def __init__(self, points_lst=None):
+    def __init__(self, points_lst=None, mask =None):
         """constructor"""
+        self.mask = mask
         if points_lst != None:
             lefttop, rightbottom = Contour.boundary(points_lst)
             self.lt = lefttop
@@ -59,9 +61,23 @@ class Contour(object):
         return self.width * self.height
 
     def get_region(self, image):
+        """ get masked region from an image  """
         if type(image) is not np.ndarray:
             raise TypeError("image must be a ndarray")
         return image[self.lt[1]: self.rb[1], self.lt[0]: self.rb[0]]
+
+    def get_mask(self, image):
+        """ get masked region from an image  """
+        assert len(image.shape) == 3
+        assert self.mask != None
+
+        im = image[self.lt[1]: self.rb[1], self.lt[0]: self.rb[0]]
+        # result = label2rgb(self.mask, image=im, kind="overlay")
+        zero = np.zeros(im.shape, dtype=np.uint8)
+        result = cv2.add(im, zero, mask=self.mask)
+
+        return result
+
 
     def __str__(self):
         return str(self.lt) + ":" + str(self.rb)
