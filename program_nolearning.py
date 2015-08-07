@@ -43,7 +43,7 @@ def run_program(ftrain, param, param2, viz):
 
         num_correct_items += correct_items
         num_detected_items += detected_items
-
+    print "num true items: ", num_true_items
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)
     perf_ir = 2 * (P_ir * R_ir) / (P_ir + R_ir)
