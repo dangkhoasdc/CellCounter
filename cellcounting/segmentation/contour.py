@@ -75,7 +75,7 @@ class Contour(object):
         # result = label2rgb(self.mask, image=im, kind="overlay")
         zero = np.zeros(im.shape, dtype=np.uint8)
         result = cv2.add(im, zero, mask=self.mask)
-
+        com.debug_im(result)
         return result
 
 

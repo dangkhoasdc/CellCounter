@@ -45,6 +45,7 @@ class SegmentStage(Stage):
         wd_sz = self.params["wd_sz"]
         h, w = raw_image.shape
         contours = cont.findContours(image)
+
         # remove too small segments
         # with large segments, apply watershed segmentation algorithm
 
@@ -62,6 +63,8 @@ class SegmentStage(Stage):
                     filtered_contours.extend(segments)
                 else:
                     filtered_contours.append(c)
+                for c in segments:
+                    c.get_mask(orig_image)
             else:
                 filtered_contours.append(c)
         # contours = list(set(filtered_contours))

@@ -14,7 +14,7 @@ from .absframework import AbsFramework
 from sklearn.preprocessing import normalize
 
 
-class Framework(object):
+class Framework(AbsFramework):
     """Main Framework"""
     def __init__(self, window_size,
                  scale_ratio,
@@ -54,7 +54,59 @@ class Framework(object):
         im = cv2.resize(im, (width, height))
         return im
 
+    def get_data(self, image_lst, loc_lst, visualize=False):
+        """
+        prepare data for training phase
+        """
+        data = []
+        labels = []
+        for image, locs in zip(image_lst, loc_lst):
 
+            demo_img = self.imread(image, 1)
+            processed_img, gray_img = self.preprocess(demo_img)
+            segments = self.segment(processed_img, gray_img, demo_img)
+
+            correct = 0
+            # draw all counted objects in the image
+
+            if visualize:
+                for seg in segments:
+                    seg.draw(demo_img, (0, 255, 0), 1)
+                for loc in locs:
+                    cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
+
+            # if there are more than 1 segment in this image
+            if locs:
+                # visualize true cells
+                # check if each segment is close to one true cell
+                for seg in segments:
+                    data.append(seg)
+
+                    if len(locs) == 0:
+                        break
+
+                    point, value = com.nearest_point(seg.center, locs)
+
+                    if value <= self._db.tol:
+                        locs.remove(point)
+                        correct += 1
+                        labels.append(1)
+
+                        if visualize:
+                            seg.draw(demo_img, (255, 255, 0), 1)
+                    else:
+                        labels.append(0)
+            else:
+                for seg in segments:
+                    data.append(seg)
+                    labels.append(0)
+
+            if visualize:
+                com.debug_im(gray_img)
+                com.debug_im(processed_img)
+                com.debug_im(demo_img, True)
+
+        return data, labels
     def run_train(self, image_lst, loc_lst, save):
         assert self._window_size % 2 == 1
         assert type(image_lst) is list

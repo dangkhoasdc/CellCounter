@@ -5,29 +5,32 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Abstract Framrwork Class
 """
+import cv2
 
 
 class AbsFramework(object):
     """ The Abstract Framrwork Class """
-    def __init__(self):
-        pass
+    def __init__(self, database, preprocessing, segmentation):
+        self._segmentation = segmentation
+        self._preprocess = preprocessing
+        self._db = database
 
-    def preprocess(self):
+    def preprocess(self, image):
         """ reprocessing stage """
-        raise NotImplementedError("The Subclass should implement this")
+        return self._preprocess.run(image)
 
-    def segment(self):
-        """ reprocessing stage """
-        raise NotImplementedError("The Subclass should implement this")
+    def segment(self, image, raw_image, demo):
+        """ segment an image """
+        return self._segmentation.run(image, raw_image, demo)
 
-    def extract(self):
-        """ reprocessing stage """
-        raise NotImplementedError("The Subclass should implement this")
+    def imread(self, fname, flags=1):
+        """ load an image and scale it"""
 
-    def train(self):
-        """ training stage """
-        raise NotImplementedError("The Subclass should implement this")
-
-    def test(self):
-        """ testing stage """
-        raise NotImplementedError("The Subclass should implement this")
+        im = cv2.imread(fname, flags)
+        if im is None:
+            raise IOError("Could not load an image ", fname)
+        h, w = im.shape[:2]
+        w = int(self._db.scale_ratio * w)
+        h = int(self._db.scale_ratio * h)
+        im = cv2.resize(im, (w, h))
+        return im
