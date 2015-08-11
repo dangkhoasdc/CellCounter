@@ -93,4 +93,6 @@ class SegmentStage(Stage):
             for c in contours:
                 if con != c and com.euclid(c.center, con.center) < dist_tol:
                     contours.remove(c)
+        for con in contours:
+            com.debug_im(con.get_mask(orig_image))
         return contours

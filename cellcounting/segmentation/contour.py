@@ -17,6 +17,7 @@ class Contour(object):
         """constructor"""
         self.mask = mask
         if points_lst != None:
+            self.points_lst = points_lst
             lefttop, rightbottom = Contour.boundary(points_lst)
             self.lt = lefttop
             self.rb = rightbottom
@@ -69,14 +70,21 @@ class Contour(object):
     def get_mask(self, image):
         """ get masked region from an image  """
         assert len(image.shape) == 3
-        assert self.mask != None
+        result = None
+        if self.mask is not None :
+            im = image[self.lt[1]: self.rb[1], self.lt[0]: self.rb[0]]
+            # result = label2rgb(self.mask, image=im, kind="overlay")
+            zero = np.zeros(im.shape, dtype=np.uint8)
+            result = cv2.add(im, zero, mask=self.mask)
 
-        im = image[self.lt[1]: self.rb[1], self.lt[0]: self.rb[0]]
-        # result = label2rgb(self.mask, image=im, kind="overlay")
-        zero = np.zeros(im.shape, dtype=np.uint8)
-        result = cv2.add(im, zero, mask=self.mask)
-        com.debug_im(result)
+        elif self.points_lst is not None:
+            m = np.zeros(image.shape[:2], dtype=np.uint8)
+            cv2.drawContours(m, self.points_lst, -1, 255, cv2.cv.CV_FILLED)
+            result = cv2.add(np.zeros(image.shape, dtype=np.uint8), image, mask=m)
+            result = image[self.lt[1]: self.rb[1], self.lt[0]: self.rb[0]]
+
         return result
+
 
 
     def __str__(self):
@@ -106,8 +114,7 @@ def findContours(image):
         # cnt_len = cv2.arcLength(c, False)
         # cnt = cv2.approxPolyDP(c, 0.08 * cnt_len, True)
         # if cv2.contourArea(cnt) > 25: #and cv2.isContourConvex(cnt):
-            # new_conts.append(c)
-
+            # new_conts.append(cnt)
     # conts = new_conts
     segments = [Contour(points_lst) for points_lst in conts]
     return segments
