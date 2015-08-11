@@ -10,7 +10,7 @@ Description: The Abstract Feature Class
 class Feature(object):
     """ The Abstract Feature Class """
 
-    def __len__(self):
-        raise NotImplementedError("Subclass should be implement this ")
-
+    def compute(self, iamge):
+        """ compute the feature """
+        raise NotImplementedError("This method should be implemented")
 
