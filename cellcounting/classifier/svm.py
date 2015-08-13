@@ -36,14 +36,14 @@ class SVM(object):
                    c_range=None, gamma_range=None):
         """ The idea comes from auto_train method in OpenCV lib """
 
-        if k_fold is not None:
-            self.k_fold = k_fold
-        if samples is not None and labels is not None:
-            self.training_data = samples
-            self.training_labels = labels
-
-        assert type(self.training_data) is np.ndarray
-        assert type(self.training_labels) is np.ndarray
+        # if k_fold is not None:
+            # self.k_fold = k_fold
+        # if samples is not None and labels is not None:
+        self.training_data = samples
+        self.training_labels = labels
+        print self.training_data[0].shape
+        print self.training_labels.shape
+        print type(self.training_labels)
         # grid search + cross-validation
         c_range = c_range if c_range is not None else self.default_c_range
 

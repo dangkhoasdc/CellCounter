@@ -3,31 +3,31 @@ File: sparsecoding.py
 Author: Khoa Le Tan Dang <letan.dangkhoa@gmail.com>
 Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
-Description: The Sparse Coding implementation
+Description: The Sparse Coding implementation using SPAMS lib
 """
 import numpy as np
-import sklearn.decomposition as decomp
+import spams
 
 
-def encode(X, dictionary):
+def encode(X, dictionary, alpha):
     """
     Sparse coding
     """
-    return decomp.sparse_encode(X, dictionary)
+    X1 = np.asfortranarray(X.T)
+    result = spams.omp(X1, dictionary, lambda1=alpha)
+    return result.T.toarray()
+
 
 class DictLearning:
     """
     Solves a dictionary learning matrix factorization problem.
     """
     def __init__(self, X, n_components, alpha, save=None):
-        code, d, errors = decomp.dict_learning(X,
-                                                 n_components,
-                                                 alpha,
-                                                 n_jobs=-1,
-                                                 max_iter=50,
-                                                 tol=1e-04)
-        self.code = code
-        self.d = d
+        X1 = np.asfortranarray(X.T)
+        self.X = X1
+        self.lambda1 = alpha
+        self.d = spams.trainDL(X1, K=n_components, mode=3, modeD=0, numThreads=-1, lambda1=alpha, return_model=False)
+        self.d = np.asfortranarray(self.d)
         if save:
             np.save(save, self.d)
 
@@ -43,6 +43,5 @@ class DictLearning:
         """
         The sparse code factor in the matrix factorization
         """
-        return self.code
-
-
+        self.code = spams.omp(self.X1, self.d, lambda1=self.lambda1)
+        return self.code.todense(out=np.ndarray)

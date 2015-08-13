@@ -12,4 +12,4 @@ def max_pooling(X):
     """
     The max pooling function
     """
-    return np.max(X, axis=0)
+    return np.amax(X, axis=0).flatten()
