@@ -62,11 +62,12 @@ def watershed(image):
         top = np.amin(indices[0])
         down = np.amax(indices[0])
 
-        region = labels[top:down, left:right]
-        m = (region > 0) & (region != idx)
-        region[m] = 0
-        region[region >= 1] = 1
-        cont = Contour(mask= region)
+        # region = labels[top:down, left:right]
+        # m = (region > 0) & (region != idx)
+        # region[m] = 0
+        # region[region >= 1] = 1
+        region = image[top:down, left:right]
+        cont = Contour(mask=region)
         cont.lt = [left, top]
         cont.rb = [right, down]
         segments.append(cont)

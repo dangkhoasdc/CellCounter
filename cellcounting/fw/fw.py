@@ -115,6 +115,9 @@ class Framework(AbsFramework):
         print "Max pooling function done"
         training_data = np.vstack(training_data)
         labels = np.float32(labels)
+        print "The number of positive samples:", len(labels[labels==1])
+        print "The number of false samples:", len(labels[labels==0])
+
         # svm
         print training_data.shape
         self._classifier.auto_train(training_data, labels)
@@ -149,7 +152,6 @@ class Framework(AbsFramework):
 
         labels = np.float32(labels)
         result = self._classifier.predict(testing_data)
-        print len(loc_lst)
 
         for predicted, expected, s in zip(result, labels, segments):
             if predicted == expected:

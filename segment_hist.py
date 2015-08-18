@@ -70,10 +70,6 @@ class SegmentStage(Stage):
         # contours = list(set(filtered_contours))
         contours = list(filtered_contours)
 
-        # for c in contours:
-            # print c.width/float(c.height)
-            # c.draw(orig_image, (0, 0, 255), 1)
-        # com.debug_im(orig_image)
 
         contours = [c for c in contours if (c.width >= wd_sz and c.height >= wd_sz) and (1.7 >= (c.width/float(c.height)) >= 0.5)]
         contours = [c for c in contours if c.area >= 130]
