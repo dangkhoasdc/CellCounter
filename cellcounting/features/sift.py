@@ -16,7 +16,7 @@ class SIFTFeature(feature.Feature):
     extractor = cv2.DescriptorExtractor_create("SIFT")
     detector = cv2.FeatureDetector_create("SIFT")
 
-    def __int__(self):
+    def __init__(self):
         # initialize the SIFT feature
         pass
 
