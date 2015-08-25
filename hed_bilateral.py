@@ -30,6 +30,7 @@ class HedBilateralFilter(Stage):
               self).__init__("Hed Color space and Bilateral Filter", params)
 
     def run(self, image):
+
         assert image.size > 0
         hed = cv2.split(rgb2hed(image))[1]
         im = img_as_ubyte(1.0 - hed)
@@ -37,7 +38,7 @@ class HedBilateralFilter(Stage):
         im[im >= 115] = 255
         im[im < 115] = 0
         # com.debug_im(im)
-        im = rank.enhance_contrast(im, disk(5))
+        im = rank.enhance_contrast(im, disk(3))
         im = morph.close(im, disk(3))
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],

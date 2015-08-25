@@ -14,8 +14,8 @@ from sklearn.grid_search import GridSearchCV
 
 class SVM(object):
     """ Wrapped SVM class from sklearn lib """
-    default_c_range = np.logspace(-1, 4, num=8, base=5)
-    default_gamma_range = np.logspace(-3, 1, num=8, base=15)
+    default_c_range = np.logspace(-2, 10, 13)
+    default_gamma_range = np.logspace(-9, 3, 13)
 
     def __init__(self, k_fold=3, training_data=None, training_labels=None,
                  testing_data=None, testing_labels=None):

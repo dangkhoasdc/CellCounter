@@ -47,34 +47,26 @@ class Framework(AbsFramework):
                 for loc in locs:
                     cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
 
-            # if there are more than 1 segment in this image
-            if locs:
-                # visualize true cells
-                # check if each segment is close to one true cell
-                for seg in segments:
-                    data.append(seg.get_region(demo_img))
-                    result.append(seg)
+            # visualize true cells
+            # check if each segment is close to one true cell
+            for seg in segments:
+                data.append(seg.get_region(gray_img))
+                result.append(seg)
 
-                    if len(locs) == 0:
-                        labels.append(0)
-                        continue
+                if len(locs) == 0:
+                    labels.append(-1)
+                    continue
 
-                    point, value = com.nearest_point(seg.center, locs)
+                point, dist = com.nearest_point(seg.center, locs)
 
-                    if value <= self._db.tol:
-                        locs.remove(point)
-                        correct += 1
-                        labels.append(1)
-
-                        if visualize:
-                            seg.draw(demo_img, (255, 255, 0), 1)
-                    else:
-                        labels.append(0)
-            else:
-                for seg in segments:
-                    data.append(seg.get_region(demo_img))
-                    labels.append(0)
-                    result.append(seg)
+                if dist <= self._db.tol:
+                    locs.remove(point)
+                    correct += 1
+                    labels.append(1)
+                    if visualize:
+                        seg.draw(demo_img, (255, 255, 0), 1)
+                else:
+                    labels.append(-1)
 
             if visualize:
                 com.debug_im(gray_img)
@@ -83,21 +75,20 @@ class Framework(AbsFramework):
 
         return data, labels, result
 
-    def train(self, image_lst, loc_lst, save):
+    def train(self, image_lst, loc_lst, viz=False):
         """
         The training phase
         """
         # get the training data
 
-        data, l, _ = self.get_data(image_lst, loc_lst)
-        labels = l
+        data, labels, _ = self.get_data(image_lst, loc_lst, viz)
         print "Get data done"
         training_data = [self._extraction.compute(im)[0] for im in data]
         training_data = np.vstack(training_data)
         labels = np.float32(labels)
 
         print "The number of positive samples:", len(labels[labels == 1])
-        print "The number of false samples:", len(labels[labels == 0])
+        print "The number of false samples:", len(labels[labels == -1])
 
         # svm
         print training_data.shape
@@ -106,33 +97,33 @@ class Framework(AbsFramework):
         return self._classifier
 
 
-    def test(self, image, loc_lst):
+    def test(self, image, loc_lst, viz=False):
         """ test an image """
         demo = self.imread(image)
-        for loc in loc_lst:
-            cv2.circle(demo, loc, 2, (0, 0, 255), 3)
+        correct = 0
+        if viz:
+            for loc in loc_lst:
+                cv2.circle(demo, loc, 2, (0, 0, 255), 3)
 
-        data, l, segments = self.get_data([image], [loc_lst])
-
-        labels = l
-        features = []
-
+        data, labels, segments = self.get_data([image], [loc_lst])
+        total_segments = len(data)
         testing_data = [self._extraction.compute(im)[0] for im in data]
 
         testing_data = np.vstack(testing_data)
-        testing_data = np.float32(testing_data)
 
-        labels = np.float32(labels)
         result = self._classifier.predict(testing_data)
 
         for predicted, expected, s in zip(result, labels, segments):
             if predicted == expected:
-                s.draw(demo, (0, 255, 0), 1)
+                correct += 1
+                if viz:
+                    s.draw(demo, (0, 255, 0), 1)
             else:
-                s.draw(demo, (255, 255, 0), 1)
-        com.debug_im(demo)
-        return 0
-
+                if viz:
+                    s.draw(demo, (255, 255, 0), 1)
+        if viz:
+            com.debug_im(demo)
+        return total_segments, correct
 
     def __str__(self):
         return "\n".join(map(str, [
