@@ -6,3 +6,4 @@ model_*
 *.pyc
 .DS_Store
 data/*
+data2/*

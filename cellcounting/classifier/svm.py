@@ -14,17 +14,12 @@ from sklearn.grid_search import GridSearchCV
 
 class SVM(object):
     """ Wrapped SVM class from sklearn lib """
-    default_c_range = np.logspace(-2, 10, 13)
-    default_gamma_range = np.logspace(-9, 3, 13)
+    default_c_range = np.logspace(-2, 10, 5)
+    default_gamma_range = np.logspace(-9, 3, 5)
 
-    def __init__(self, k_fold=3, training_data=None, training_labels=None,
-                 testing_data=None, testing_labels=None):
+    def __init__(self, k_fold=3):
 
         self.k_fold = k_fold
-        self.training_data = training_data
-        self.training_labels = training_labels
-        self.testing_data = testing_data
-        self.testing_labels = testing_labels
         self._model = None
         self._best_params = None
 
@@ -51,7 +46,7 @@ class SVM(object):
             gamma_range = self.default_gamma_range
 
         param_grid = {"C": c_range, "gamma": gamma_range}
-        clf = SVC(kernel="rbf", tol=10e-6)
+        clf = SVC(kernel="linear")
         print self.k_fold
         self._model = GridSearchCV(clf,
                                    param_grid=param_grid,
@@ -66,6 +61,7 @@ class SVM(object):
 
     def predict(self, sample):
         """ predict the label of a sample """
+        assert self._model != None
         return self._model.predict(sample)
 
     def __str__(self):

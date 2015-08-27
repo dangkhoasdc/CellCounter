@@ -33,8 +33,9 @@ class HedBilateralFilter(Stage):
 
         assert image.size > 0
         hed = cv2.split(rgb2hed(image))[1]
-        im = img_as_ubyte(1.0 - hed)
-        im = rescale_intensity(im)
+        hed = img_as_ubyte(1.0 - hed)
+        hed = rescale_intensity(hed)
+        im = hed
         im[im >= 115] = 255
         im[im < 115] = 0
         # com.debug_im(im)
