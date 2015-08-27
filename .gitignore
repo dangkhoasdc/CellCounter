@@ -3,6 +3,7 @@
 *.xyc
 .ropeproject/*
 model_*
+model
 *.pyc
 .DS_Store
 data/*

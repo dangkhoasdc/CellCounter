@@ -25,7 +25,7 @@ class Framework(AbsFramework):
                                         segmentation_stage)
         self._classifier = classifier
         self._extraction = extraction
-        self._n_components = 1
+        self._n_components = 200
         self._pca = RandomizedPCA(n_components=self._n_components,
                                   whiten=True)
 
@@ -106,9 +106,10 @@ class Framework(AbsFramework):
         print "The number of false samples:", len(labels[labels == -1])
 
         # svm
-        print training_data.shape
+        print "train data size: ", training_data.shape
         self._classifier.auto_train(training_data, labels)
         print "train done"
+        press = raw_input("Press any keys to continue")
         return self._classifier
 
 

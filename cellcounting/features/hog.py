@@ -33,7 +33,7 @@ class HOGFeature(Feature):
         """
         calculate the HOG descriptor
         """
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        # image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         image = cv2.resize(image, (20, 20))
         result, visualization = hog(image,
                                     self.orientations,

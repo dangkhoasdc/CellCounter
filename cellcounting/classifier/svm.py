@@ -14,8 +14,8 @@ from sklearn.grid_search import GridSearchCV
 
 class SVM(object):
     """ Wrapped SVM class from sklearn lib """
-    default_c_range = np.logspace(-2, 10, 5)
-    default_gamma_range = np.logspace(-9, 3, 5)
+    default_c_range = np.logspace(-2, 10, 8)
+    default_gamma_range = np.logspace(-9, 3, 8)
 
     def __init__(self, k_fold=3):
 
@@ -36,18 +36,14 @@ class SVM(object):
         # if samples is not None and labels is not None:
         self.training_data = samples
         self.training_labels = labels
-        print self.training_data[0].shape
-        print self.training_labels.shape
-        print type(self.training_labels)
         # grid search + cross-validation
         c_range = c_range if c_range is not None else self.default_c_range
 
         if gamma_range is None:
             gamma_range = self.default_gamma_range
-
-        param_grid = {"C": c_range, "gamma": gamma_range}
-        clf = SVC(kernel="linear")
-        print self.k_fold
+        kernels = ("poly", "rbf", "sigmoid")
+        param_grid = {"C": c_range, "gamma": gamma_range, "kernel": kernels}
+        clf = SVC(kernel="rbf",)
         self._model = GridSearchCV(clf,
                                    param_grid=param_grid,
                                    n_jobs=-1,
