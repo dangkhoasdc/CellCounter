@@ -34,10 +34,13 @@ class HedBilateralFilter(Stage):
         assert image.size > 0
         hed = cv2.split(rgb2hed(image))[1]
         hed = img_as_ubyte(1.0 - hed)
+        # hed = 1.0 - hed
         hed = rescale_intensity(hed)
         im = hed
-        im[im >= 115] = 255
-        im[im < 115] = 0
+        # im = img_as_ubyte(hed)
+        # com.debug_im(im)
+        im[im >= 150] = 255
+        im[im < 150] = 0
         # com.debug_im(im)
         im = rank.enhance_contrast(im, disk(3))
         im = morph.close(im, disk(3))
