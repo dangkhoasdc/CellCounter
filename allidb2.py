@@ -7,10 +7,11 @@ Description: Framework for ALL-IDB2
 """
 import sys
 import cv2
+import csv
 import numpy as np
 from skimage.color import rgb2hed
 from sklearn.cross_validation import train_test_split
-from sklearn.decomposition import RandomizedPCA
+from sklearn.decomposition import RandomizedPCA, SparsePCA, IncrementalPCA
 from sklearn.grid_search import GridSearchCV
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
@@ -39,25 +40,46 @@ for img in files:
 
 data_train, data_test, labels_train, labels_test = train_test_split(
     data, labels, test_size=0.25)
+print "test size: ", len(data_test)
+print "train size: ", len(data_train)
 
 # Randomized PCA
-n_components = 100
-pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
+components_range = range(2, 300, 6)
 
-pca_features_train = pca.transform(data_train)
-pca_features_test = pca.transform(data_test)
+scores = []
+for n_components in components_range:
+    # pca = SparsePCA(n_components, n_jobs=-1).fit(data_train)
+    # pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
+    pca = IncrementalPCA(n_components, whiten=True).fit(data_train)
 
-grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
-              "C": np.logspace(-5, -3, num=8, base=2),
-              "gamma": np.logspace(-15, 3, num=8, base=2)}
+    pca_features_train = pca.transform(data_train)
+    pca_features_test = pca.transform(data_test)
 
-clf = GridSearchCV(SVC(class_weight="auto"), grid_param)
-clf = clf.fit(pca_features_train, labels_train)
+    grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
+                  "C": np.logspace(-5, -3, num=8, base=2),
+                  "gamma": np.logspace(-15, 3, num=8, base=2)}
 
-print clf.best_estimator_
+    clf = GridSearchCV(SVC(class_weight="auto"), grid_param)
+    clf = clf.fit(pca_features_train, labels_train)
 
-y_pred = clf.predict(pca_features_test)
+    # print clf.best_estimator_
 
-score = accuracy_score(labels_test, y_pred)
-print score
+    y_pred = clf.predict(pca_features_test)
+
+    score = accuracy_score(labels_test, y_pred)
+    scores.append(score)
+
+##########################################
+# Write experiment results to file
+##
+
+f = open("./experiments/allidb2_increpca_orig_.csv", "wt")
+try:
+    writer = csv.writer(f)
+    writer.writerow(("n_components", "accuracy"))
+    for component, score in zip(components_range, scores):
+        writer.writerow((component, score))
+
+finally:
+    f.close()
 
