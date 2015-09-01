@@ -20,6 +20,7 @@ from hed_bilateral import HedBilateralFilter
 from segment_hist import  SegmentStage
 from cellcounting import common as com
 from cellcounting.features.hog import HOGFeature
+from cellcounting.features.lbp import LBP
 
 try:
     filename = sys.argv[1]
@@ -38,27 +39,25 @@ preprocessor.set_param("bilateral_kernel", filter_kernel)
 preprocessor.set_param("sigma_color", 9)
 segment = SegmentStage(5)
 hog = HOGFeature()
+lbp = LBP()
 labels = []
 data = []
-
+n_samples = len(files)
 for img in files:
     label = img[-5:-4]
     labels.append(float(label))
     image = cv2.imread(img, flags=1)
-    canny, gray = preprocessor.run(image)
-    # com.debug_im(image)
-    conts = segment.run(canny, gray, image)
-    try:
-        max_cont = max(conts, key=lambda x: x.area)
-    except ValueError:
-        print "filename: ", img
-        exit()
-    # com.debug_im(max_cont.get_region(rgb2hed(image)[1]))
-    region = max_cont.get_region(cv2.split(rgb2hed(image))[1])
-    # com.debug_im(region)
-    max_cont = cv2.resize(region, (30, 30))
-    max_cont, _ = hog.compute(max_cont)
+    region = rgb2hed(image)[1]
+    max_cont = cv2.resize(region, (40, 40)).flatten()
+    # max_cont, _ = lbp.compute(max_cont)
     data.append(max_cont)
+
+data = np.array(data, dtype=np.float32)
+################################################
+# PREPROCESSING
+mean_img = np.mean(data, axis=0)
+data_centered = data - mean_img
+data -= data_centered.mean(axis=1).reshape(n_samples, -1)
 
 data_train, data_test, labels_train, labels_test = train_test_split(
     data, labels, test_size=0.25)
@@ -66,7 +65,7 @@ print "test size: ", len(data_test)
 print "train size: ", len(data_train)
 
 # Randomized PCA
-components_range = range(2, 100, 1)
+components_range = range(2, len(data_test), 1)
 
 scores = []
 for n_components in components_range:
@@ -81,7 +80,9 @@ for n_components in components_range:
                   "C": np.logspace(-5, -3, num=8, base=2),
                   "gamma": np.logspace(-15, 3, num=8, base=2)}
 
-    clf = GridSearchCV(SVC(class_weight="auto"), grid_param)
+    clf = GridSearchCV(SVC(class_weight="auto"), grid_param,
+                       n_jobs=-1,
+                       cv=3)
     clf = clf.fit(pca_features_train, labels_train)
 
     # print clf.best_estimator_
@@ -91,11 +92,12 @@ for n_components in components_range:
     score = accuracy_score(labels_test, y_pred)
     scores.append(score)
 
+print "best accuracy: ", np.max(scores)
 ##########################################
 # Write experiment results to file
 ##
 
-f = open("./experiments/allidb2_randomizedpca_canny_hog.csv", "wt")
+f = open("./experiments/allidb2_randomizedpca_2.csv", "wt")
 try:
     writer = csv.writer(f)
     writer.writerow(("n_components", "accuracy"))
