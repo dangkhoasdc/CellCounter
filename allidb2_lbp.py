@@ -9,7 +9,7 @@ import sys
 import cv2
 import csv
 import numpy as np
-from skimage import img_as_float
+from skimage import img_as_float, img_as_ubyte
 from skimage.color import rgb2hed
 from sklearn.cross_validation import train_test_split
 from sklearn.decomposition import RandomizedPCA, SparsePCA, IncrementalPCA
@@ -29,7 +29,7 @@ preprocessor.set_param("bilateral_kernel", filter_kernel)
 preprocessor.set_param("sigma_color", 9)
 segment = SegmentStage(5)
 hog = HOGFeature()
-lbp = LBP(1, 16, "var")
+lbp = LBP(2, 16, "var")
 labels = []
 
 def load_list_files(filename):
@@ -38,6 +38,7 @@ def load_list_files(filename):
     """
     files = []
     data = []
+    hist_data = []
     labels = []
     with open(filename, "r") as f:
         files = [line.strip() for line in f.readlines()]
@@ -46,7 +47,10 @@ def load_list_files(filename):
         label = img[-5:-4]
         labels.append(float(label))
         image = cv2.imread(img, flags=1)
-        # region = cv2.split(rgb2hed(image))[1]
+        hed = cv2.split(rgb2hed(image))[1]
+        hed = img_as_ubyte(hed)
+        hist = cv2.calcHist([hed], [0], None, [256], [0, 256]).flatten()
+        hist_data.append(hist)
         _, region = preprocessor.run(image)
         region = cv2.resize(region, (256, 256))
         lbp_hist, lbp_img = lbp.compute(region)
@@ -54,9 +58,11 @@ def load_list_files(filename):
         lbp_img = cv2.resize(lbp_img, (30, 30))
         lbp_img = np.nan_to_num(lbp_img)
         data.append(lbp_img.flatten())
+        # data.append(lbp_hist)
 
     data = np.array(data, dtype=np.float32)
-    return data, labels
+    hist_data = np.array(hist_data, dtype=np.float32)
+    return data, labels, hist_data
 
 try:
     train_files = sys.argv[1]
@@ -65,14 +71,14 @@ except:
     train_files = "allidb2_train.txt"
     test_files = "allidb2_test.txt"
 
-data_train, labels_train = load_list_files(train_files)
-data_test, labels_test = load_list_files(test_files)
-
+data_train, labels_train, hist_train = load_list_files(train_files)
+data_test, labels_test, hist_test = load_list_files(test_files)
+n_samples = data_train.shape[0]
 ################################################
 # PREPROCESSING
-# mean_img = np.mean(data, axis=0)
-# data_centered = data - mean_img
-# data -= data_centered.mean(axis=1).reshape(n_samples, -1)
+mean_img = np.mean(data_train, axis=0)
+data_centered = data_train - mean_img
+data_train -= data_centered.mean(axis=1).reshape(n_samples, -1)
 
 # data_train, data_test, labels_train, labels_test = train_test_split(
     # data, labels, test_size=0.25)
@@ -89,9 +95,12 @@ for n_components in components_range:
     pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
     # pca = IncrementalPCA(n_components, whiten=True).fit(data_train)
 
+    print "hist train: ", hist_train.shape
+    print "hist test: ", hist_test.shape
     pca_features_train = pca.transform(data_train)
     pca_features_test = pca.transform(data_test)
-
+    pca_features_train = np.hstack((pca_features_train, hist_train))
+    pca_features_test = np.hstack((pca_features_test, hist_test))
     grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
                   "C": np.logspace(-5, -3, num=8, base=2),
                   "gamma": np.logspace(-15, 3, num=8, base=2)}
@@ -112,7 +121,7 @@ print max(scores)
 # Write experiment results to file
 ##
 
-f = open("./experiments/allidb2_randomizedpca_lbp.csv", "wt")
+f = open("./experiments/allidb2_randomizedpca_lbp_histcolor.csv", "wt")
 try:
     writer = csv.writer(f)
     writer.writerow(("n_components", "accuracy"))
