@@ -15,7 +15,7 @@ class LBP(Feature):
     """
     Local Binary Pattern features
     """
-    def __init__(self, radius=1, neighbor=8, method="uniform"):
+    def __init__(self, radius=2, neighbor=8, method="uniform"):
         super(LBP, self).__init__()
         self.r = radius
         self.p = 8 * self.r
@@ -25,10 +25,11 @@ class LBP(Feature):
         """
         Compute the LBP feature
         """
+        print image.shape
         lbp_img = local_binary_pattern(image, self.p, self.r, self.method)
-        hist, _ = np.histogram(lbp_img.ravel(), 256, [0, 256])
+        print lbp_img.shape
+        hist, _ = np.histogram(lbp_img.flatten(), 256, [0, 256])
         # normalize the hist
         hist = hist.astype(float)
         hist = normalize(hist).flatten()
-        print hist
-        return hist, _
+        return hist, lbp_img
