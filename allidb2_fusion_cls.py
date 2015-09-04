@@ -1,9 +1,9 @@
 """
-File: allidb2.py
+File: allidb2_fusion_cls.py
 Author: Khoa Le Tan Dang <letan.dangkhoa@gmail.com>
 Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
-Description: Framework for ALL-IDB2
+Description: Fusion of classifiers
 """
 import sys
 import cv2
@@ -46,7 +46,7 @@ def load_list_files(filename):
 
     for img in files:
         label = img[-5:-4]
-        labels.append(float(label))
+        labels.append(int(label))
         image = cv2.imread(img, flags=1)
         hed = cv2.split(rgb2hed(image))[1]
         hed = img_as_ubyte(hed)
@@ -77,9 +77,9 @@ data_test, labels_test, hist_test = load_list_files(test_files)
 n_samples = data_train.shape[0]
 ################################################
 # PREPROCESSING
-# mean_img = np.mean(data_train, axis=0)
-# data_centered = data_train - mean_img
-# data_train -= data_centered.mean(axis=1).reshape(n_samples, -1)
+mean_img = np.mean(data_train, axis=0)
+data_centered = data_train - mean_img
+data_train -= data_centered.mean(axis=1).reshape(n_samples, -1)
 
 # data_train, data_test, labels_train, labels_test = train_test_split(
     # data, labels, test_size=0.25)
@@ -88,35 +88,46 @@ n_samples = data_train.shape[0]
 print "train data: ", data_train.shape
 print "test data: ", data_test.shape
 # Randomized PCA
-components_range = range(2, 200, 2)
+components_range = range(2, 100, 2)
 # components_range = range(2, 120, 2)
 
 scores = []
+
+grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
+                "C": np.logspace(-5, -3, num=8, base=2),
+                "gamma": np.logspace(-15, 3, num=8, base=2)}
+
+classifer = SVC(class_weight="auto", probability=True)
+clf_lbp = GridSearchCV(classifer,
+                        grid_param,
+                        n_jobs=-1,
+                        cv=3)
+
+
+clf_hist = GridSearchCV(SVC(class_weight="auto", probability=True),
+                        grid_param,
+                        n_jobs=-1,
+                        cv=3)
+
 hist_train = normalize(hist_train, axis=1)
 hist_test = normalize(hist_test, axis=1)
-for n_components in components_range:
-    # pca = SparsePCA(n_components, n_jobs=-1).fit(data_train)
-    pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
-    # pca = IncrementalPCA(n_components, whiten=True).fit(data_train)
 
-    print "hist train: ", hist_train.shape
-    print "hist test: ", hist_test.shape
+for n_components in components_range:
+    pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
+
     pca_features_train = pca.transform(data_train)
     pca_features_test = pca.transform(data_test)
-    pca_features_train = np.hstack((pca_features_train, hist_train))
-    pca_features_test = np.hstack((pca_features_test, hist_test))
-    grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
-                  "C": np.logspace(-5, -3, num=8, base=2),
-                  "gamma": np.logspace(-15, 3, num=8, base=2)}
 
-    clf = GridSearchCV(SVC(class_weight="auto"), grid_param,
-                       n_jobs=-1,
-                       cv=3)
-    clf = clf.fit(pca_features_train, labels_train)
-
+    clf_lbp = clf_lbp.fit(pca_features_train, labels_train)
+    clf_hist = clf_hist.fit(hist_train, labels_train)
     # print clf.best_estimator_
 
-    y_pred = clf.predict(pca_features_test)
+    y_proba_lbp= clf_lbp.predict_proba(pca_features_test)
+    y_proba_hist = clf_hist.predict_proba(hist_test)
+    y_pred = np.argmax(np.multiply(y_proba_hist, y_proba_lbp), axis=1)
+
+    print y_pred
+    print labels_test
 
     score = accuracy_score(labels_test, y_pred)
     scores.append(score)
@@ -125,7 +136,7 @@ print max(scores)
 # Write experiment results to file
 ##
 
-f = open("./experiments/allidb2_randomizedpca_lbp_histcolor_55.csv", "wt")
+f = open("./experiments/allidb2_randomizedpca_fusion_multi_55.csv", "wt")
 try:
     writer = csv.writer(f)
     writer.writerow(("n_components", "accuracy"))

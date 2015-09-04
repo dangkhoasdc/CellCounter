@@ -80,7 +80,8 @@ n_samples = data_train.shape[0]
 # mean_img = np.mean(data_train, axis=0)
 # data_centered = data_train - mean_img
 # data_train -= data_centered.mean(axis=1).reshape(n_samples, -1)
-
+data_train = hist_train
+data_test = hist_test
 # data_train, data_test, labels_train, labels_test = train_test_split(
     # data, labels, test_size=0.25)
 # data_train = np.array(data_train, dtype=np.float64)
@@ -88,50 +89,48 @@ n_samples = data_train.shape[0]
 print "train data: ", data_train.shape
 print "test data: ", data_test.shape
 # Randomized PCA
-components_range = range(2, 200, 2)
+# components_range = range(2, data_train.shape[1], 2)
 # components_range = range(2, 120, 2)
 
 scores = []
-hist_train = normalize(hist_train, axis=1)
-hist_test = normalize(hist_test, axis=1)
-for n_components in components_range:
-    # pca = SparsePCA(n_components, n_jobs=-1).fit(data_train)
-    pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
-    # pca = IncrementalPCA(n_components, whiten=True).fit(data_train)
+# for n_components in components_range:
+    # # pca = SparsePCA(n_components, n_jobs=-1).fit(data_train)
+    # pca = RandomizedPCA(n_components, whiten=True).fit(data_train)
+    # # pca = IncrementalPCA(n_components, whiten=True).fit(data_train)
 
-    print "hist train: ", hist_train.shape
-    print "hist test: ", hist_test.shape
-    pca_features_train = pca.transform(data_train)
-    pca_features_test = pca.transform(data_test)
-    pca_features_train = np.hstack((pca_features_train, hist_train))
-    pca_features_test = np.hstack((pca_features_test, hist_test))
-    grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
-                  "C": np.logspace(-5, -3, num=8, base=2),
-                  "gamma": np.logspace(-15, 3, num=8, base=2)}
+    # print "hist train: ", hist_train.shape
+    # print "hist test: ", hist_test.shape
+    # pca_features_train = pca.transform(data_train)
+    # pca_features_test = pca.transform(data_test)
+pca_features_train = normalize(data_train, axis=1)
+pca_features_test = normalize(data_test, axis=1)
+grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
+                "C": np.logspace(-5, -3, num=8, base=2),
+                "gamma": np.logspace(-15, 3, num=8, base=2)}
 
-    clf = GridSearchCV(SVC(class_weight="auto"), grid_param,
-                       n_jobs=-1,
-                       cv=3)
-    clf = clf.fit(pca_features_train, labels_train)
+clf = GridSearchCV(SVC(class_weight="auto"), grid_param,
+                    n_jobs=-1,
+                    cv=3)
+clf = clf.fit(pca_features_train, labels_train)
 
-    # print clf.best_estimator_
+# print clf.best_estimator_
 
-    y_pred = clf.predict(pca_features_test)
+y_pred = clf.predict(pca_features_test)
 
-    score = accuracy_score(labels_test, y_pred)
-    scores.append(score)
+score = accuracy_score(labels_test, y_pred)
+scores.append(score)
 print max(scores)
 ##########################################
 # Write experiment results to file
 ##
 
-f = open("./experiments/allidb2_randomizedpca_lbp_histcolor_55.csv", "wt")
-try:
-    writer = csv.writer(f)
-    writer.writerow(("n_components", "accuracy"))
-    for component, score in zip(components_range, scores):
-        writer.writerow((component, score))
+# f = open("./experiments/allidb2_histcolor_55.csv", "wt")
+# try:
+    # writer = csv.writer(f)
+    # writer.writerow(("n_components", "accuracy"))
+    # for component, score in zip(components_range, scores):
+        # writer.writerow((component, score))
 
-finally:
-    f.close()
+# finally:
+    # f.close()
 
