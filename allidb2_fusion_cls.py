@@ -11,6 +11,9 @@ import csv
 import numpy as np
 from skimage import img_as_float, img_as_ubyte
 from skimage.color import rgb2hed
+from skimage.filters.rank import enhance_contrast
+from skimage.morphology import disk
+from skimage.filters import denoise_bilateral, threshold_isodata
 from sklearn.cross_validation import train_test_split
 from sklearn.decomposition import RandomizedPCA, SparsePCA, IncrementalPCA
 from sklearn.grid_search import GridSearchCV
@@ -22,6 +25,15 @@ from segment_hist import  SegmentStage
 from cellcounting import common as com
 from cellcounting.features.hog import HOGFeature
 from cellcounting.features.lbp import LBP
+
+################################### ################################
+# Configuration
+
+image_size = (256, 256)
+lbp_size = (40, 40)
+kernel = disk(3)
+
+
 
 # Create samples and its label
 preprocessor = HedBilateralFilter()
@@ -49,16 +61,18 @@ def load_list_files(filename):
         labels.append(int(label))
         image = cv2.imread(img, flags=1)
         hed = cv2.split(rgb2hed(image))[1]
+        hed = denoise_bilateral(hed, sigma_range=0.1, sigma_spatial=1.5)
         hed = img_as_ubyte(hed)
+        # hed = enhance_contrast(hed, kernel)
+        # com.debug_im(hed)
         hist = cv2.calcHist([hed], [0], None, [256], [0, 256]).flatten()
         hist_data.append(hist)
         _, region = preprocessor.run(image)
-        region = cv2.resize(region, (256, 256))
-        lbp_hist, lbp_img = lbp.compute(region)
+        region = cv2.resize(region, image_size)
+        hog_img, _ = hog.compute(region)
         # com.debug_im(lbp_img)
-        lbp_img = cv2.resize(lbp_img, (30, 30))
-        lbp_img = np.nan_to_num(lbp_img)
-        data.append(lbp_img.flatten())
+
+        data.append(hog_img)
         # data.append(lbp_hist)
 
     data = np.array(data, dtype=np.float32)
@@ -69,30 +83,27 @@ try:
     train_files = sys.argv[1]
     test_files = sys.argv[2]
 except:
-    train_files = "allidb2_train.txt"
-    test_files = "allidb2_test.txt"
+    test_files = "allidb2_train.txt"
+    trai_files = "allidb2_test.txt"
 
 data_train, labels_train, hist_train = load_list_files(train_files)
 data_test, labels_test, hist_test = load_list_files(test_files)
 n_samples = data_train.shape[0]
 ################################################
 # PREPROCESSING
-mean_img = np.mean(data_train, axis=0)
-data_centered = data_train - mean_img
-data_train -= data_centered.mean(axis=1).reshape(n_samples, -1)
+# mean_img = np.mean(data_train, axis=0)
+# data_centered = data_train - mean_img
+# data_train -= data_centered.mean(axis=1).reshape(n_samples, -1)
 
 # data_train, data_test, labels_train, labels_test = train_test_split(
     # data, labels, test_size=0.25)
 # data_train = np.array(data_train, dtype=np.float64)
 # data_test = np.array(data_test, dtype=np.float64)
-print "train data: ", data_train.shape
-print "test data: ", data_test.shape
 # Randomized PCA
+# components_range = range(2, data_train.shape[1], 2)
 components_range = range(2, 100, 2)
-# components_range = range(2, 120, 2)
 
 scores = []
-
 grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
                 "C": np.logspace(-5, -3, num=8, base=2),
                 "gamma": np.logspace(-15, 3, num=8, base=2)}
@@ -124,19 +135,15 @@ for n_components in components_range:
 
     y_proba_lbp= clf_lbp.predict_proba(pca_features_test)
     y_proba_hist = clf_hist.predict_proba(hist_test)
-    y_pred = np.argmax(np.multiply(y_proba_hist, y_proba_lbp), axis=1)
-
-    print y_pred
-    print labels_test
+    y_pred = np.argmax((y_proba_hist + y_proba_lbp), axis=1)
 
     score = accuracy_score(labels_test, y_pred)
     scores.append(score)
 print max(scores)
 ##########################################
 # Write experiment results to file
-##
 
-f = open("./experiments/allidb2_randomizedpca_fusion_multi_55.csv", "wt")
+f = open("./experiments/allidb2_randomizedpca_fusion_add_55.csv", "wt")
 try:
     writer = csv.writer(f)
     writer.writerow(("n_components", "accuracy"))
