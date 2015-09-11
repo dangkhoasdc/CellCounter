@@ -39,10 +39,10 @@ class HedBilateralFilter(Stage):
         im = hed
         # im = img_as_ubyte(hed)
         # com.debug_im(im)
-        im[im >= 150] = 255
-        im[im < 150] = 0
+        im[im >= 115] = 255
+        im[im < 115] = 0
         # com.debug_im(im)
-        im = rank.enhance_contrast(im, disk(3))
+        im = rank.enhance_contrast(im, disk(5))
         im = morph.close(im, disk(3))
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],
