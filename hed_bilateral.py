@@ -33,7 +33,7 @@ class HedBilateralFilter(Stage):
 
         assert image.size > 0
         hed = cv2.split(rgb2hed(image))[1]
-        hed = img_as_ubyte(1.0 - hed)
+        hed = img_as_ubyte(1.0 -hed)
         # hed = 1.0 - hed
         hed = rescale_intensity(hed)
         im = hed
@@ -41,14 +41,15 @@ class HedBilateralFilter(Stage):
         # com.debug_im(im)
         im[im >= 115] = 255
         im[im < 115] = 0
-        # com.debug_im(im)
         im = rank.enhance_contrast(im, disk(5))
         im = morph.close(im, disk(3))
+
         can = cv2.adaptiveBilateralFilter(im,
                                           self.params["bilateral_kernel"],
                                           self.params["sigma_color"])
         v = np.median(can)
         sigma = 0.2
+
         lower = int(max(0, (1.0 - sigma) * v))
         upper = int(min(255, (1.0 + sigma) * v))
         thres = cv2.Canny(can, lower, upper)

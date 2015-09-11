@@ -17,7 +17,7 @@ class HOGFeature(Feature):
     """
     def __init__(self,
                  orientations=9,
-                 pixels_per_cell=(10, 10),
+                 pixels_per_cell=(5, 5),
                  cells_per_block=(2, 2),
                  viz=False,
                  normalize=False):

@@ -17,11 +17,9 @@ class LearningFramework(AbsFramework):
                  extraction,
                  classifier):
         """init"""
-        super(Framework, self).__init__(database,
+        super(LearningFramework, self).__init__(database,
                                         preprocess_stage,
                                         segmentation_stage)
-        self._classifier = classifier
-        self._extraction = extraction
 
     def get_data(self, image_lst, loc_lst, visualize=False):
         """
