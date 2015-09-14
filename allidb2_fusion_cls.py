@@ -73,8 +73,7 @@ def load_list_files(filename):
         lbp_img, _ = lbp.compute(region)
         com.debug_im(_)
 
-        data.append(hog_img)
-        data.append(lbp_hist)
+        data.append(_)
 
     data = np.array(data, dtype=np.float32)
     hist_data = np.array(hist_data, dtype=np.float32)

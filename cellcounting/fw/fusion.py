@@ -71,7 +71,7 @@ class FusionFramework(LearningFramework):
 
             if visualize:
                 for seg in segments:
-                    seg.draw(demo_img, (0, 255, 0), 1)
+                    seg.draw(demo_img, (0, 255, 0) 1)
                 for loc in locs:
                     cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
 

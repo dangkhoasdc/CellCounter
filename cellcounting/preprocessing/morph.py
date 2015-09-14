@@ -5,7 +5,6 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Morphological operations
 """
-
 import cv2
 import numpy as np
 import pymorph
