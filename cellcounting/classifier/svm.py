@@ -52,8 +52,9 @@ class SVM(object):
         self._model.fit(self.training_data, self.training_labels)
 
         self._best_params = self._model.best_params_
+
         if save:
-            joblib.dump(self._model, "model")
+            joblib.dump(self._model, "model/model")
 
     def predict(self, sample):
         """ predict the label of a sample """
