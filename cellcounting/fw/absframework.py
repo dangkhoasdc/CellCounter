@@ -7,7 +7,6 @@ Description: Abstract Framrwork Class
 """
 import cv2
 
-
 class AbsFramework(object):
     """ The Abstract Framrwork Class """
     def __init__(self, database, preprocessing, segmentation):

@@ -5,8 +5,6 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Program version 2
 """
-import cv2
-import sys
 import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
@@ -16,32 +14,33 @@ from cellcounting.fw import nolearning
 
 def run_program(ftrain, param, param2, viz):
     """ run the program """
-
+    ##########################################
+    ## CONFIGURATION
+    #################
+    num_correct_items = 0
+    num_detected_items = 0
     filter_kernel = (param, param)
     sigma_color = param2
 
-    pre = HedBilateralFilter(filter_kernel, sigma_color )
+    ##########################################
+    ## INIT THE FRAMEWORK
+    #################
+    pre = HedBilateralFilter(filter_kernel, sigma_color)
     seg = SegmentStage(10)
-
     db = allidb.AllIdb()
+
     framework = nolearning.NoLearningFramework(db, pre, seg)
 
     image_lst, loc_lst = allidb.load_data(ftrain, db.scale_ratio)
-
-    num_correct_items = 0
-    num_detected_items = 0
     num_true_items = sum([len(loc) for loc in loc_lst])
 
     for image, loc in zip(image_lst, loc_lst):
-        print image
-        correct_items, detected_items = framework.run(image,
-                                                      loc,
-                                                      visualize=viz)
+        correct, detected= framework.run(image,
+                                         loc,
+                                         visualize=viz)
 
-        num_correct_items += correct_items
-        num_detected_items += detected_items
-
-    print "num true items: ", num_true_items
+        num_correct_items += correct
+        num_detected_items += detected
 
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)
@@ -50,7 +49,6 @@ def run_program(ftrain, param, param2, viz):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-
     ap.add_argument("-d", "--database", required=True,
                     help="Path to the database file")
     ap.add_argument("-o", "--output", help="Path to the result file")
@@ -61,12 +59,11 @@ if __name__ == '__main__':
     config_output = args["output"] is not None
     db = args["database"]
     viz = args["visualize"]
-    if config_output:
-        f = open(args["output"], "w")
 
     result = run_program(db, 7, 11, viz)
     print result
 
     if config_output:
-        f.write(str(result) + ",")
+        f = open(args["output"], "w")
+        f.write(str(result))
         f.close()
