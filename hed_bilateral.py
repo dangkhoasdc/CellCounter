@@ -23,14 +23,12 @@ from skimage.exposure import rescale_intensity
 
 class HedBilateralFilter(Stage):
     """ HED color space + bilateral filter  """
-    def __init__(self, wd_sz=3):
-        params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 3}
-        super(HedBilateralFilter,
-              self).__init__("Hed Color space and Bilateral Filter", params)
+
+    def __init__(self, bilateral_kernel, sigma_color):
+        self.sigma_color = sigma_color
+        self.bilateral_kernel = bilateral_kernel
 
     def run(self, image):
-
         assert image.size > 0
         hed = cv2.split(rgb2hed(image))[1]
         hed = img_as_ubyte(1.0 -hed)
@@ -45,11 +43,11 @@ class HedBilateralFilter(Stage):
         im = morph.close(im, disk(3))
 
         can = cv2.adaptiveBilateralFilter(im,
-                                          self.params["bilateral_kernel"],
-                                          self.params["sigma_color"])
+                                          self.bilateral_kernel,
+                                          self.sigma_color)
         v = np.median(can)
-        sigma = 0.2
 
+        sigma = 0.2
         lower = int(max(0, (1.0 - sigma) * v))
         upper = int(min(255, (1.0 + sigma) * v))
         thres = cv2.Canny(can, lower, upper)

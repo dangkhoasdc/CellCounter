@@ -17,20 +17,17 @@ from cellcounting.fw import nolearning
 def run_program(ftrain, param, param2, viz):
     """ run the program """
 
-    pre = HedBilateralFilter()
+    filter_kernel = (param, param)
+    sigma_color = param2
+
+    pre = HedBilateralFilter(filter_kernel, sigma_color )
     seg = SegmentStage(10)
+
     db = allidb.AllIdb()
     framework = nolearning.NoLearningFramework(db, pre, seg)
-    filter_kernel = (param, param)
-    pre.set_param("bilateral_kernel", filter_kernel)
-    pre.set_param("sigma_color", param2)
 
-    file_train = open(ftrain, "r")
-    row_lst = [line.strip() for line in file_train.readlines()]
-    file_train.close()
+    image_lst, loc_lst = allidb.load_data(ftrain, db.scale_ratio)
 
-    image_lst = [line+".jpg" for line in row_lst]
-    loc_lst = [allidb.get_true_locs(line+".xyc", db.scale_ratio) for line in row_lst]
     num_correct_items = 0
     num_detected_items = 0
     num_true_items = sum([len(loc) for loc in loc_lst])
@@ -43,7 +40,9 @@ def run_program(ftrain, param, param2, viz):
 
         num_correct_items += correct_items
         num_detected_items += detected_items
+
     print "num true items: ", num_true_items
+
     R_ir = num_correct_items / float(num_true_items)
     P_ir = num_correct_items / float(num_detected_items)
     perf_ir = 2 * (P_ir * R_ir) / (P_ir + R_ir)

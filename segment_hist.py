@@ -16,10 +16,9 @@ from cellcounting import common as com
 
 class SegmentStage(Stage):
     """ Segmentation algorithm """
-    def __init__(self, wd_sz=None):
-        params = {"wd_sz": wd_sz}
-        self._default_params = {"wd_sz": 20, "dist_tol": 5}
-        super(SegmentStage, self).__init__("findContours algorithm", params)
+    def __init__(self, wd_sz=20, dist_tol=5):
+        self.wd_sz = wd_sz
+        self.dist_tol = dist_tol
 
     def inside(self, l, s):
         """ Check if s is inside l """
@@ -41,8 +40,8 @@ class SegmentStage(Stage):
         return result
 
     def run(self, image, raw_image, orig_image):
-        dist_tol = self.params["dist_tol"]
-        wd_sz = self.params["wd_sz"]
+        dist_tol = self.dist_tol
+        wd_sz = self.wd_sz
         h, w = raw_image.shape
         contours = cont.findContours(image)
 
