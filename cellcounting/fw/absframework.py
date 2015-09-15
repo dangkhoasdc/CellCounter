@@ -18,9 +18,9 @@ class AbsFramework(object):
         """ reprocessing stage """
         return self._preprocess.run(image)
 
-    def segment(self, image, raw_image, demo):
+    def segment(self, image):
         """ segment an image """
-        return self._segmentation.run(image, raw_image, demo)
+        return self._segmentation.run(image)
 
     def imread(self, fname, flags=1):
         """ load an image and scale it"""

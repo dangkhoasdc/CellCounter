@@ -11,9 +11,9 @@ import cellcounting.common as com
 from cellcounting.fw.absframework import AbsFramework
 
 class LearningFramework(AbsFramework):
-    def __init__(self, preprocess_stage,
+    def __init__(self,database,
+                 preprocess_stage,
                  segmentation_stage,
-                 database,
                  extraction,
                  classifier):
         """init"""
@@ -31,8 +31,8 @@ class LearningFramework(AbsFramework):
         for image, locs in zip(image_lst, loc_lst):
 
             demo_img = self.imread(image, 1)
-            processed_img, gray_img = self.preprocess(demo_img)
-            segments = self.segment(processed_img, gray_img, demo_img)
+            processed_img = self.preprocess(demo_img)
+            segments = self.segment(processed_img)
 
             correct = 0
             # draw all counted objects in the image

@@ -16,6 +16,7 @@ class Contour(object):
     def __init__(self, points_lst=None, mask =None):
         """constructor"""
         self.mask = mask
+        self.detected = False
         if points_lst != None:
             lefttop, rightbottom = Contour.boundary(points_lst)
             self.lt = lefttop

@@ -12,6 +12,7 @@ from cellcounting.stage import Stage
 from cellcounting.segmentation import contour as cont
 from cellcounting.segmentation.watershed import watershed
 from cellcounting import common as com
+from cellcounting.preprocessing import morph
 
 
 class SegmentStage(Stage):
@@ -32,17 +33,26 @@ class SegmentStage(Stage):
     def filter_hist(self, contours, image):
         """ remove segments not containing black blocks """
         result = []
-        for cont in contours:
-            hist = self.calcHist(cont.get_region(image))
+        for contour in contours:
+            hist = self.calcHist(contour.get_region(image))
             sum_hist = float(np.sum(hist))
             if np.sum(hist[:95])/sum_hist >= 0.2:
-                result.append(cont)
+                result.append(contour)
         return result
 
-    def run(self, image, raw_image, orig_image):
+    def run(self, image):
         dist_tol = self.dist_tol
         wd_sz = self.wd_sz
-        h, w = raw_image.shape
+        h, w = image.shape
+        raw_image = np.copy(image)
+
+        v = np.median(image)
+        sigma = 0.2
+        lower = int(max(0, (1.0 - sigma) * v))
+        upper = int(min(255, (1.0 + sigma) * v))
+        image = cv2.Canny(image, lower, upper)
+        kernel_dilation = np.ones((1, 1), dtype=np.int8)
+        image = morph.dilate(image, kernel_dilation, 3)
         contours = cont.findContours(image)
 
         # remove too small segments
@@ -62,8 +72,8 @@ class SegmentStage(Stage):
                     filtered_contours.extend(segments)
                 else:
                     filtered_contours.append(c)
-                for c in segments:
-                    c.get_mask(orig_image)
+                # for c in segments:
+                    # c.get_mask(raw_image)
             else:
                 filtered_contours.append(c)
         # contours = list(set(filtered_contours))

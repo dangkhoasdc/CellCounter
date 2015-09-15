@@ -8,15 +8,11 @@ Description: Preprocessing stage: HED + Bilateral filter
 import cv2
 import numpy as np
 from cellcounting.stage import Stage
-from cellcounting.db import allidb
 from cellcounting.preprocessing import morph
-from cellcounting.segmentation import contour as cont
-from cellcounting.fw import nolearning
 from cellcounting import common as com
 from skimage.morphology import disk
 import skimage.filters.rank as rank
 from skimage.color import rgb2hed
-from skimage.restoration import denoise_tv_bregman
 from skimage.util import img_as_ubyte
 from skimage.exposure import rescale_intensity
 
@@ -31,7 +27,7 @@ class HedBilateralFilter(Stage):
     def run(self, image):
         assert image.size > 0
         hed = cv2.split(rgb2hed(image))[1]
-        hed = img_as_ubyte(1.0 -hed)
+        hed = img_as_ubyte(1.0 - hed)
         # hed = 1.0 - hed
         hed = rescale_intensity(hed)
         im = hed
@@ -45,12 +41,4 @@ class HedBilateralFilter(Stage):
         can = cv2.adaptiveBilateralFilter(im,
                                           self.bilateral_kernel,
                                           self.sigma_color)
-        v = np.median(can)
-
-        sigma = 0.2
-        lower = int(max(0, (1.0 - sigma) * v))
-        upper = int(min(255, (1.0 + sigma) * v))
-        thres = cv2.Canny(can, lower, upper)
-        kernel_dilation = np.ones((1, 1), dtype=np.int8)
-        thres = morph.dilate(thres, kernel_dilation, 3)
-        return thres, can
+        return can
