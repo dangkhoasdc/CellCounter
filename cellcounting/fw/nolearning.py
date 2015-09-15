@@ -36,26 +36,12 @@ class NoLearningFramework(AbsFramework):
         # if there are more than 1 segment in this image
         # visualize true cells
         # check if each segment is close to one true cell
-        for seg in segments:
-            if not loc_list:
-                break
-            point, value = com.nearest_point(seg.center, loc_list)
-            if value <= self._db.tol:
-                loc_list.remove(point)
-                seg.detected = True
-
+        segments = self.eval_segments(segments, loc_list)
         num_cells = len(segments)
-        correct = len(filter(lambda x: x.detected == True, segments))
+        correct = len(filter(lambda x: x.detected, segments))
         if visualize:
+            self.visualize_segments(img, segments, locations_list)
             # draw all counted objects in the image
-            for loc in locations_list:
-                cv2.circle(img, loc, 2, (0, 255, 0), 1)
-            for seg in segments:
-                if seg.detected:
-                    seg.draw(img, (255, 255, 0), 1)
-                else:
-                    seg.draw(img, (0, 255, 0), 1)
-
             print "The number of expected cells: ", expected_nums
             print "The number of cells counting by the program:", num_cells
             print "The number of true counting cells: ", correct

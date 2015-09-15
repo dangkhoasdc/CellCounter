@@ -6,6 +6,7 @@ Github: dangkhoasdc
 Description: Abstract Framrwork Class
 """
 import cv2
+from .. import common as com
 
 class AbsFramework(object):
     """ The Abstract Framrwork Class """
@@ -33,3 +34,37 @@ class AbsFramework(object):
         h = int(self._db.scale_ratio * h)
         im = cv2.resize(im, (w, h))
         return im
+
+    def eval_segments(self, segments, loc_list):
+        """
+        Check if the detected segment in the list of segments
+        is correctly located or not based on the list of ground true data
+        Return:
+            segments (list of Contour): Segments changed
+            the detected attribute.
+            If seg.detected == False: false counting otherwise
+            seg.detected == True
+        """
+        for seg in segments:
+            if not loc_list:
+                break
+            point, value = com.nearest_point(seg.center, loc_list)
+            if value <= self._db.tol:
+                loc_list.remove(point)
+                seg.detected = True
+        return segments
+
+    def visualize_segments(self, image, segments, loc_list):
+        """
+        Visualize segments
+        """
+        for loc in loc_list:
+            cv2.circle(image, loc, 2, (0, 255, 0), 1)
+        for seg in segments:
+            if seg.detected:
+                seg.draw(image, (255, 255, 0), 1)
+            else:
+                seg.draw(image, (0, 255, 0), 1)
+        return image
+
+
