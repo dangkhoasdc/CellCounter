@@ -21,6 +21,17 @@ class LearningFramework(AbsFramework):
                                         preprocess_stage,
                                         segmentation_stage)
 
+    def preprocess_segment(self, segment):
+        segment.lt[0] -= 4
+        segment.lt[1] -= 4
+        segment.rb[0] += 3
+        segment.rb[1] += 3
+
+        length = max(segment.width, segment.height)
+
+        # update new coordinates
+        return segment
+
     def get_data(self, image_lst, loc_lst, visualize=False):
         """
         prepare data for training phase
@@ -34,6 +45,7 @@ class LearningFramework(AbsFramework):
             demo_img = self.imread(image, 1)
             processed_img = self.preprocess(demo_img)
             segments = self.segment(processed_img)
+            segments =[self.preprocess_segment(s) for s in segments]
             locations = list(loc_lst)
             # draw all counted objects in the image
             # visualize true cells
@@ -42,9 +54,8 @@ class LearningFramework(AbsFramework):
             for seg in segments:
                 data.append(seg.get_region(demo_img))
                 result.append(seg)
-
             self.eval_segments(segments, locs)
-            labels.extend([1 if s.detected else -1 for s in segments])
+            labels.extend([1 if s.detected else 0 for s in segments])
 
             if visualize:
                 for loc in locations:

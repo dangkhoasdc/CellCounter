@@ -62,9 +62,9 @@ class AbsFramework(object):
             cv2.circle(image, loc, 2, (0, 255, 0), 1)
         for seg in segments:
             if seg.detected:
-                seg.draw(image, (255, 255, 0), 1)
+                seg.draw(image, (0, 0, 255), 1)
             else:
-                seg.draw(image, (0, 255, 0), 1)
+                seg.draw(image, (255, 0, 0), 1)
         return image
 
 

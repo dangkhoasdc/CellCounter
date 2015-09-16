@@ -102,7 +102,7 @@ class FusionFramework(LearningFramework):
         total_segments = len(data)
         testing_data = [self._extraction.compute(im) for im in data]
         hist_data, hog_data = zip(*testing_data)
-
+        print "total of segments: ", total_segments
         hist_data = np.array(hist_data, dtype=np.float32)
         hog_data = np.array(hog_data, dtype=np.float32)
         ############################

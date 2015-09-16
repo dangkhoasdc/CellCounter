@@ -85,7 +85,7 @@ class SegmentStage(Stage):
         # for c in contours:
             # print c.area
         contours = [c for c in contours if 8 < c.center[0] and 8 < c.center[1] and c.center[0] < w-8 and c.center[1] < h-8]
-        contours = [c for c in contours if 2 < c.lt[0] and 2 < c.lt[1] and c.rb[0] < w-2 and c.rb[1] < h-2]
+        contours = [c for c in contours if 3 < c.lt[0] and 3 < c.lt[1] and c.rb[0] < w-3 and c.rb[1] < h-3]
 
         contours = sorted(contours, key= lambda x: x.area, reverse=True)
         filtered_contours = []
