@@ -8,3 +8,4 @@ model
 .DS_Store
 data/*
 data2/*
+dict.npy
