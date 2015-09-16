@@ -20,6 +20,8 @@ class LearningFramework(AbsFramework):
         super(LearningFramework, self).__init__(database,
                                         preprocess_stage,
                                         segmentation_stage)
+        self._extraction = extraction
+        self._classifier = classifier
 
     def preprocess_segment(self, segment):
         segment.lt[0] -= 4
