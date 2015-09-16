@@ -9,6 +9,7 @@ from cellcounting.features.feature import Feature
 from skimage.feature import local_binary_pattern
 from sklearn.preprocessing import normalize
 import numpy as np
+import cv2
 
 
 class LBP(Feature):
@@ -25,9 +26,8 @@ class LBP(Feature):
         """
         Compute the LBP feature
         """
-        print image.shape
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         lbp_img = local_binary_pattern(image, self.p, self.r, self.method)
-        print lbp_img.shape
         hist, _ = np.histogram(lbp_img.flatten(), 256, [0, 256])
         # normalize the hist
         hist = hist.astype(float)

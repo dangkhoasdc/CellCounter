@@ -22,19 +22,22 @@ if __name__ == '__main__':
         ftrain = sys.argv[1]
         ftest = sys.argv[2]
     except:
-        ftrain = "train.txt"
-        ftest = "test.txt"
+        ftrain = "train/allidb1_1.txt"
+        ftest = "test/allidb1_1.txt"
 
-    pre = HedBilateralFilter()
-    seg = SegmentStage(10)
+    filter_kernel = (7, 7)
+    sigma_color = 11.0
+    preprocessor = HedBilateralFilter(filter_kernel, sigma_color)
+    segmentation = SegmentStage(10)
     db = allidb.AllIdb()
     hog_feature = hog.HOGFeature()
     lbp_feature = lbp.LBP()
     svm_clf = svm.SVM()
-    framework = fw.Framework(pre, seg, db, lbp_feature, svm_clf)
-    filter_kernel = (7, 11)
-    pre.set_param("bilateral_kernel", filter_kernel)
-    pre.set_param("sigma_color", 9)
+    framework = fw.Framework(db,
+                             preprocessor,
+                             segmentation,
+                             lbp_feature,
+                             svm_clf)
 
     file_train = open(ftrain, "r")
     row_lst = [line.strip() for line in file_train.readlines()]

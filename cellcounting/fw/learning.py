@@ -58,9 +58,7 @@ class LearningFramework(AbsFramework):
             labels.extend([1 if s.detected else 0 for s in segments])
 
             if visualize:
-                for loc in locations:
-                    cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
-                self.visualize_segments(demo_img, segments, locations)
+                elf.visualize_segments(demo_img, segments, locations)
                 com.debug_im(processed_img)
                 com.debug_im(demo_img, True)
 
