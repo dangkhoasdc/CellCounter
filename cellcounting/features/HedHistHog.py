@@ -27,9 +27,7 @@ class HedHistHog(Feature):
         self.image_size = (256, 256)
         self.filter_kernel = (7, 7)
         # Create samples and its label
-        self.preprocessor = HedBilateralFilter()
-        self.preprocessor.set_param("bilateral_kernel", self.filter_kernel)
-        self.preprocessor.set_param("sigma_color", 9)
+        self.preprocessor = HedBilateralFilter(self.filter_kernel, 9.0)
         self.hog = HOGFeature()
 
     def compute(self, image):
@@ -47,12 +45,11 @@ class HedHistHog(Feature):
 
         ########################################
         # Construct the HOG feature of the image
-        _, region = self.preprocessor.run(image)
+        region = self.preprocessor.run(image)
         h, w = region.shape[:2]
         image_size = max(h, w)
         image_size = (image_size, image_size)
         region = cv2.resize(region, self.image_size)
-        com.debug_im(region)
         hog_data, _ = self.hog.compute(region)
 
 

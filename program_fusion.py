@@ -12,8 +12,6 @@ from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
 from cellcounting.fw.fusion import FusionFramework
-from cellcounting.features import sift
-from cellcounting.classifier import svm
 from cellcounting.features.HedHistHog import HedHistHog
 
 
@@ -22,20 +20,22 @@ if __name__ == '__main__':
         ftrain = sys.argv[1]
         ftest = sys.argv[2]
     except:
-        ftrain = "train.txt"
-        ftest = "test.txt"
+        ftrain = "train/allidb1_1.txt"
+        ftest = "test/allidb1_1.txt"
 
-    op = "sum"
+    operator = "sum"
     filter_kernel = (7, 7)
-    sigma_color = 11
-    pre = HedBilateralFilter()
-    seg = SegmentStage(10)
+    sigma_color = 11.0
+    preprocessor = HedBilateralFilter(filter_kernel, sigma_color)
+    segmentation = SegmentStage(10)
     db = allidb.AllIdb()
     feature_extract = HedHistHog()
-    pre.set_param("bilateral_kernel", filter_kernel)
-    pre.set_param("sigma_color", sigma_color)
 
-    framework = FusionFramework(pre, seg, db, feature_extract, op)
+    framework = FusionFramework(db,
+                                preprocessor,
+                                segmentation,
+                                feature_extract,
+                                operator)
     file_train = open(ftrain, "r")
     row_lst = [line.strip() for line in file_train.readlines()]
     file_train.close()

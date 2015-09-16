@@ -18,16 +18,16 @@ class FusionFramework(LearningFramework):
     """
     Fusion of classifiers
     """
-    def __init__(self, preprocess_stage,
+    def __init__(self, database,
+                 preprocess_stage,
                  segmentation_stage,
-                 database,
                  extraction,
                  operator="sum",
                  n_components=20):
         """init"""
-        super(FusionFramework, self).__init__(preprocess_stage,
+        super(FusionFramework, self).__init__(database,
+                                              preprocess_stage,
                                               segmentation_stage,
-                                              database,
                                               extraction,
                                               None)
         self.op = operator
@@ -50,58 +50,6 @@ class FusionFramework(LearningFramework):
                                      grid_param,
                                      n_jobs=-1,
                                      cv=3)
-
-
-    def get_data(self, image_lst, loc_lst, visualize=False):
-        """
-        prepare data for training phase
-        """
-        data = []
-        labels = []
-        result = []
-        print "visualization: ", visualize
-        for image, locs in zip(image_lst, loc_lst):
-
-            demo_img = self.imread(image, 1)
-            processed_img, gray_img = self.preprocess(demo_img)
-            segments = self.segment(processed_img, gray_img, demo_img)
-
-            correct = 0
-            # draw all counted objects in the image
-
-            if visualize:
-                for seg in segments:
-                    seg.draw(demo_img, (0, 255, 0) 1)
-                for loc in locs:
-                    cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
-
-            # visualize true cells
-            # check if each segment is close to one true cell
-            for seg in segments:
-                data.append(seg.get_region(demo_img))
-                result.append(seg)
-
-                if len(locs) == 0:
-                    labels.append(-1)
-                    continue
-
-                point, dist = com.nearest_point(seg.center, locs)
-
-                if dist <= self._db.tol:
-                    locs.remove(point)
-                    correct += 1
-                    labels.append(1)
-                    if visualize:
-                        seg.draw(demo_img, (255, 255, 0), 1)
-                else:
-                    labels.append(-1)
-
-            if visualize:
-                com.debug_im(gray_img)
-                com.debug_im(processed_img)
-                com.debug_im(demo_img, True)
-
-        return data, labels, result
 
     def train(self, image_lst, loc_lst, viz=False):
         """
@@ -144,6 +92,7 @@ class FusionFramework(LearningFramework):
     def test(self, image, loc_lst, viz=False):
         """ test an image """
         demo = self.imread(image)
+        assert demo is not None
         correct = 0
         if viz:
             for loc in loc_lst:
@@ -162,8 +111,8 @@ class FusionFramework(LearningFramework):
 
         ##############################
         # RandomizedPCA for the hog feature
-
         hog_data = self._pca.transform(hog_data)
+
         ##############################
         # Fusion of classifiers
 
@@ -188,11 +137,9 @@ class FusionFramework(LearningFramework):
         for predicted, expected, s in zip(result, labels, segments):
             if predicted == expected:
                 correct += 1
-                if viz:
-                    s.draw(demo, (0, 255, 0), 1)
-            else:
-                if viz:
-                    s.draw(demo, (255, 255, 0), 1)
+                s.detected = True
+
         if viz:
+            self.visualize_segments(demo, segments, loc_lst)
             com.debug_im(demo)
         return total_segments, correct

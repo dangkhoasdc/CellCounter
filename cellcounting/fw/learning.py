@@ -28,44 +28,28 @@ class LearningFramework(AbsFramework):
         data = []
         labels = []
         result = []
+
         for image, locs in zip(image_lst, loc_lst):
 
             demo_img = self.imread(image, 1)
             processed_img = self.preprocess(demo_img)
             segments = self.segment(processed_img)
-
-            correct = 0
+            locations = list(loc_lst)
             # draw all counted objects in the image
-
-            if visualize:
-                for seg in segments:
-                    seg.draw(demo_img, (0, 255, 0), 1)
-                for loc in locs:
-                    cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
-
             # visualize true cells
             # check if each segment is close to one true cell
+
             for seg in segments:
-                data.append(seg.get_region(gray_img))
+                data.append(seg.get_region(demo_img))
                 result.append(seg)
 
-                if len(locs) == 0:
-                    labels.append(-1)
-                    continue
-
-                point, dist = com.nearest_point(seg.center, locs)
-
-                if dist <= self._db.tol:
-                    locs.remove(point)
-                    correct += 1
-                    labels.append(1)
-                    if visualize:
-                        seg.draw(demo_img, (255, 255, 0), 1)
-                else:
-                    labels.append(-1)
+            self.eval_segments(segments, locs)
+            labels.extend([1 if s.detected else -1 for s in segments])
 
             if visualize:
-                com.debug_im(gray_img)
+                for loc in locations:
+                    cv2.circle(demo_img, loc, 2, (0, 255, 0), 1)
+                self.visualize_segments(demo_img, segments, locations)
                 com.debug_im(processed_img)
                 com.debug_im(demo_img, True)
 
