@@ -1,6 +1,5 @@
 *.jpg
-*.png
-*.xyc
+./*.xyc
 .ropeproject/*
 model_*
 model
