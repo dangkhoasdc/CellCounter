@@ -7,7 +7,6 @@ Description: Find contours in an image and count how many cells in
 this image without using machine learning technique
 """
 from .. import common as com
-import cv2
 from .absframework import AbsFramework
 
 
@@ -40,7 +39,7 @@ class NoLearningFramework(AbsFramework):
         num_cells = len(segments)
         correct = len(filter(lambda x: x.detected, segments))
         if visualize:
-            self.visualize_segments(img, segments, locations_list)
+            com.visualize_segments(img, segments, locations_list)
             # draw all counted objects in the image
             print "The number of expected cells: ", expected_nums
             print "The number of cells counting by the program:", num_cells

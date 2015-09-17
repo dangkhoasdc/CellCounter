@@ -24,8 +24,8 @@ class LearningFramework(AbsFramework):
         self._classifier = classifier
 
     def preprocess_segment(self, segment):
-        segment.lt[0] -= 4
-        segment.lt[1] -= 4
+        segment.lt[0] -= 3
+        segment.lt[1] -= 3
         segment.rb[0] += 3
         segment.rb[1] += 3
 
@@ -60,7 +60,7 @@ class LearningFramework(AbsFramework):
             labels.extend([1 if s.detected else 0 for s in segments])
 
             if visualize:
-                elf.visualize_segments(demo_img, segments, locations)
+                com.visualize_segments(demo_img, segments, locations)
                 com.debug_im(processed_img)
                 com.debug_im(demo_img, True)
 

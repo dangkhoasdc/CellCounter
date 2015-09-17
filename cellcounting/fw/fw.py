@@ -102,7 +102,7 @@ class Framework(LearningFramework):
                 s.detected = True
         correct = len(filter(lambda x: x.detected, segments))
         if viz:
-            self.visualize_segments(demo, segments, locations)
+            com.visualize_segments(demo, segments, locations)
             com.debug_im(demo)
         return correct, total_segments
 

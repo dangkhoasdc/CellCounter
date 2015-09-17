@@ -54,17 +54,4 @@ class AbsFramework(object):
                 seg.detected = True
         return segments
 
-    def visualize_segments(self, image, segments, loc_list):
-        """
-        Visualize segments
-        """
-        for loc in loc_list:
-            cv2.circle(image, loc, 2, (0, 255, 0), 1)
-        for seg in segments:
-            if seg.detected:
-                seg.draw(image, (0, 0, 255), 1)
-            else:
-                seg.draw(image, (255, 0, 0), 1)
-        return image
-
 

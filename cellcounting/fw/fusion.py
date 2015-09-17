@@ -140,6 +140,6 @@ class FusionFramework(LearningFramework):
                 s.detected = True
 
         if viz:
-            self.visualize_segments(demo, segments, loc_lst)
+            com.visualize_segments(demo, segments, loc_lst)
             com.debug_im(demo)
         return total_segments, correct

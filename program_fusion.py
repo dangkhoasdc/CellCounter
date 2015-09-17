@@ -23,6 +23,9 @@ if __name__ == '__main__':
         ftrain = "train/allidb1_1.txt"
         ftest = "test/allidb1_1.txt"
 
+    total_correct_detected = 0
+    total_segments = 0
+
     operator = "sum"
     filter_kernel = (7, 7)
     sigma_color = 11.0
@@ -39,11 +42,10 @@ if __name__ == '__main__':
 
     image_lst, loc_lst, test_images, test_locs = allidb.load_train_test_data(ftrain,
                                                                              ftest,
-                                                                             db.scale_ratio)
+                                                                             db)
 
     framework.train(image_lst, loc_lst, False)
-    total_correct_detected = 0
-    total_segments = 0
+
     for im, loc in zip(test_images, test_locs):
         total_segments_img, correct_per_img = framework.test(im, loc, True)
         total_correct_detected += correct_per_img

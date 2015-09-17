@@ -86,7 +86,8 @@ def load_data(filelist, scale_ratio):
     loc_lst = [get_true_locs(line+".xyc", scale_ratio) for line in row_lst]
     return image_lst, loc_lst
 
-def load_train_test_data(train_file, test_file, scale_ratio):
+
+def load_train_test_data(train_file, test_file, database):
     """
     Load train data and test data from file
     Return:
@@ -95,11 +96,10 @@ def load_train_test_data(train_file, test_file, scale_ratio):
         test_file: list of file paths of testing data
         testing_locs: list of ground truths of testing data
     """
-    train_data, train_locs=load_data(train_file, scale_ratio)
-    test_data, test_locs =load_data(test_file, scale_ratio)
+    train_data, train_locs=load_data(train_file, database.scale_ratio)
+    test_data, test_locs =load_data(test_file, database.scale_ratio)
 
     return train_data, train_locs, test_data, test_locs
-
 
 if __name__ == '__main__':
     import sys

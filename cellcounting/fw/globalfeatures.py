@@ -70,7 +70,7 @@ class Framework(LearningFramework):
                 correct += 1
                 s.detected = True
         if viz:
-            self.visualize_segments(demo, segments, locations)
+            com.visualize_segments(demo, segments, locations)
             com.debug_im(demo)
         return correct, total_segments
 
