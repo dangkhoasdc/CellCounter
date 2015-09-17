@@ -36,24 +36,15 @@ if __name__ == '__main__':
                                 segmentation,
                                 feature_extract,
                                 operator)
-    file_train = open(ftrain, "r")
-    row_lst = [line.strip() for line in file_train.readlines()]
-    file_train.close()
 
-    image_lst = [line+".jpg" for line in row_lst]
-    loc_lst = [allidb.get_true_locs(line+".xyc", db.scale_ratio) for line in row_lst]
-
-    file_test = open(ftest, "r")
-    row_lst = [line.strip() for line in file_test.readlines()]
-    file_test.close()
-
-    test_image_lst = [line+".jpg" for line in row_lst]
-    test_loc_lst = [allidb.get_true_locs(line+".xyc", db.scale_ratio) for line in row_lst]
+    image_lst, loc_lst, test_images, test_locs = allidb.load_train_test_data(ftrain,
+                                                                             ftest,
+                                                                             db.scale_ratio)
 
     framework.train(image_lst, loc_lst, False)
     total_correct_detected = 0
     total_segments = 0
-    for im, loc in zip(test_image_lst, test_loc_lst):
+    for im, loc in zip(test_images, test_locs):
         total_segments_img, correct_per_img = framework.test(im, loc, True)
         total_correct_detected += correct_per_img
         total_segments += total_segments_img

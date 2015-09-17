@@ -33,6 +33,7 @@ if __name__ == '__main__':
     hog_feature = hog.HOGFeature()
     lbp_feature = lbp.LBP()
     svm_clf = svm.SVM()
+
     framework = fw.Framework(db,
                              preprocessor,
                              segmentation,
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     total_correct_detected = 0
     total_segments = 0
     for im, loc in zip(test_image_lst, test_loc_lst):
-        total_segments_img, correct_per_img = framework.test(im, loc, True)
+        correct_per_img, total_segments_img = framework.test(im, loc, True)
         total_correct_detected += correct_per_img
         total_segments += total_segments_img
 

@@ -72,7 +72,7 @@ class Framework(LearningFramework):
         if viz:
             self.visualize_segments(demo, segments, locations)
             com.debug_im(demo)
-        return total_segments, correct
+        return correct, total_segments
 
     def __str__(self):
         return "\n".join(map(str, [

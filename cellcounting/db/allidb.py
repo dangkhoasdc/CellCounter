@@ -24,6 +24,21 @@ class AllIdb(Database):
                                      self.tol)
 
 
+class AllIdb2(Database):
+    """ The All-IDB database """
+    def __init__(self):
+        self.name = "ALL-IDB 2"
+        self.scale_ratio = 1.0
+        self.tol = 7
+        self.radius = 8
+        self.resize_width = 256
+        self.resize_height = 256
+        super(AllIdb, self).__init__(self.name,
+                                     self.scale_ratio,
+                                     self.radius,
+                                     self.tol)
+
+
 def visualize_loc(img, points, wait=False):
     """
     Visualize the detected ALL cells based on their location
@@ -69,8 +84,22 @@ def load_data(filelist, scale_ratio):
 
     image_lst = [line+".jpg" for line in row_lst]
     loc_lst = [get_true_locs(line+".xyc", scale_ratio) for line in row_lst]
-
     return image_lst, loc_lst
+
+def load_train_test_data(train_file, test_file, scale_ratio):
+    """
+    Load train data and test data from file
+    Return:
+        train_file: list of file paths of training data
+        train_locs: list of ground truths of training data
+        test_file: list of file paths of testing data
+        testing_locs: list of ground truths of testing data
+    """
+    train_data, train_locs=load_data(train_file, scale_ratio)
+    test_data, test_locs =load_data(test_file, scale_ratio)
+
+    return train_data, train_locs, test_data, test_locs
+
 
 if __name__ == '__main__':
     import sys

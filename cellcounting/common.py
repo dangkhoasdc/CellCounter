@@ -59,3 +59,8 @@ def debug_im(image, wait=False):
     else:
         plt_im = plt.imshow(image)
     plt.show()
+
+
+
+
+
