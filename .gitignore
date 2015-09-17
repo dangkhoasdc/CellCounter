@@ -1,5 +1,5 @@
-*.jpg
-./*.xyc
+./*.jpg
+*.xyc
 .ropeproject/*
 model_*
 model
