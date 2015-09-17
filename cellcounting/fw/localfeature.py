@@ -104,7 +104,7 @@ class Framework(LearningFramework):
         if viz:
             com.visualize_segments(demo, segments, locations)
             com.debug_im(demo)
-        return correct, total_segments
+        return correct, num_samples
 
 
     def __str__(self):

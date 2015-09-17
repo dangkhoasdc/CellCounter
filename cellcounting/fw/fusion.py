@@ -6,13 +6,13 @@ Github: dangkhoasdc
 Description: Fusion of classifiers
 """
 import numpy as np
-import cv2
 from sklearn.decomposition import RandomizedPCA
 from sklearn.preprocessing import normalize
 from sklearn.svm import SVC
 from sklearn.grid_search import GridSearchCV
 from cellcounting.fw.learning import LearningFramework
 import cellcounting.common as com
+
 
 class FusionFramework(LearningFramework):
     """
@@ -32,8 +32,8 @@ class FusionFramework(LearningFramework):
                                               None)
         self.op = operator
         grid_param = {"kernel": ("rbf", "poly", "sigmoid"),
-                        "C": np.logspace(-5, -3, num=8, base=2),
-                        "gamma": np.logspace(-15, 3, num=8, base=2)}
+                      "C": np.logspace(-5, -3, num=8, base=2),
+                      "gamma": np.logspace(-15, 3, num=8, base=2)}
         self._extraction = extraction
 
         self._pca = RandomizedPCA(n_components=n_components, whiten=True)
@@ -44,7 +44,6 @@ class FusionFramework(LearningFramework):
                                     grid_param,
                                     n_jobs=-1,
                                     cv=3)
-
 
         self.clf_hist = GridSearchCV(self.hist_clf,
                                      grid_param,
@@ -87,22 +86,18 @@ class FusionFramework(LearningFramework):
 
         print "Train Done"
 
-
-
     def test(self, image, loc_lst, viz=False):
         """ test an image """
         demo = self.imread(image)
         assert demo is not None
         correct = 0
-        if viz:
-            for loc in loc_lst:
-                cv2.circle(demo, loc, 2, (0, 0, 255), 3)
-
+        locations = list(loc_lst)
         data, labels, segments = self.get_data([image], [loc_lst])
         total_segments = len(data)
         testing_data = [self._extraction.compute(im) for im in data]
         hist_data, hog_data = zip(*testing_data)
         print "total of segments: ", total_segments
+
         hist_data = np.array(hist_data, dtype=np.float32)
         hog_data = np.array(hog_data, dtype=np.float32)
         ############################
@@ -140,6 +135,6 @@ class FusionFramework(LearningFramework):
                 s.detected = True
 
         if viz:
-            com.visualize_segments(demo, segments, loc_lst)
+            com.visualize_segments(demo, segments, locations)
             com.debug_im(demo)
         return total_segments, correct

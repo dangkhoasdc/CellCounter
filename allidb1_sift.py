@@ -11,7 +11,7 @@ import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
-from cellcounting.fw import fw
+from cellcounting.fw import localfeature as fw
 from cellcounting.features import sift
 from cellcounting.classifier import svm
 

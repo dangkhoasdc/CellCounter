@@ -66,7 +66,7 @@ def visualize_segments(image, segments, loc_list):
     Visualize segments
     """
     for loc in loc_list:
-        cv2.circle(image, loc, 2, (0, 255, 0), 1)
+        cv2.circle(image, loc, 2, (0, 255, 0))
     for seg in segments:
         if seg.detected:
             seg.draw(image, (0, 0, 255), 1)
