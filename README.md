@@ -6,9 +6,9 @@ The program automatically detects cells in the [ALL-IDB dataset](http://crema.di
 
 # Proposed Method
 ## Counting problem
-
+![The counting framework](images/counting.png)
 ## Classification
-
+![The classification framework](images/classification.png)
 # Requirements
 
 1. [numpy](http://www.scipy.org/install.html) >= 1.9 
@@ -46,10 +46,14 @@ Because the framework is in progress as well as this version is not the final on
 
 For example, to run the fusion of classifiers framework, type this script to your console terminal:
 
-`python allidb2_fusion train/allidb2_1.txt test/allidb2_1.txt`
+`python allidb2_fusion train/allidb2_1.txt test/allidb2_1.txt` or
+
+`python allidb2_fusion` it uses file _train/allidb2_1.txt_ as training samples and file _test/allidb2_1.txt_ as testing samples.
 
 # Development
 
 ![The framework diagram](images/framework.png)
+
+[Updating]
 
 
