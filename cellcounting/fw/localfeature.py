@@ -5,16 +5,14 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: Stage Class Definition
 """
-import cv2
 import numpy as np
 from cellcounting.decomposition import sparsecoding_spams as sparse
 from cellcounting.pooling import pooling
 import cellcounting.common as com
-from cellcounting.fw.absframework import AbsFramework
 from cellcounting.fw.learning import LearningFramework
 
 
-class Framework(LearningFramework):
+class LocalFeatureFramework(LearningFramework):
     """Main Framework"""
     def __init__(self, database,
                  preprocess_stage,
@@ -22,11 +20,12 @@ class Framework(LearningFramework):
                  extraction,
                  classifier):
         """init"""
-        super(Framework, self).__init__(database,
-                                        preprocess_stage,
-                                        segmentation_stage,
-                                        extraction,
-                                        classifier)
+        super(LocalFeatureFramework,
+              self).__init__(database,
+                             preprocess_stage,
+                             segmentation_stage,
+                             extraction,
+                             classifier)
 
     def train(self, image_lst, loc_lst, save):
         """

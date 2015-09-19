@@ -11,7 +11,7 @@ import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
-from cellcounting.fw import localfeature as fw
+from cellcounting.fw import LocalFeatureFramework
 from cellcounting.features import sift
 from cellcounting.classifier import svm
 
@@ -31,11 +31,11 @@ if __name__ == '__main__':
     db = allidb.AllIdb()
     sift_feature = sift.SIFTFeature()
     svm_clf = svm.SVM()
-    framework = fw.Framework(db,
-                             preprocessor,
-                             segmentation,
-                             sift_feature,
-                             svm_clf)
+    framework = LocalFeatureFramework(db,
+                                      preprocessor,
+                                      segmentation,
+                                      sift_feature,
+                                      svm_clf)
 
 
     file_train = open(ftrain, "r")

@@ -5,13 +5,12 @@ Email: letan.dangkhoa@gmail.com
 Github: dangkhoasdc
 Description: The framework for the global feature
 """
-import cv2
 import numpy as np
 import cellcounting.common as com
 from cellcounting.fw.learning import LearningFramework
 
 
-class Framework(LearningFramework):
+class GlobalFeatureFramework(LearningFramework):
     """Main Framework"""
     def __init__(self,
                  database,
@@ -20,7 +19,7 @@ class Framework(LearningFramework):
                  extraction,
                  classifier):
         """init"""
-        super(Framework, self).__init__(database,
+        super(GlobalFeatureFramework, self).__init__(database,
                                         preprocess_stage,
                                         segmentation_stage,
                                         extraction,

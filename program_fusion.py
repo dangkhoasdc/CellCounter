@@ -11,7 +11,7 @@ import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
-from cellcounting.fw.fusion import FusionFramework
+from cellcounting.fw import FusionFramework
 from cellcounting.features.HedHistHog import HedHistHog
 
 
@@ -31,10 +31,10 @@ if __name__ == '__main__':
     sigma_color = 11.0
     preprocessor = HedBilateralFilter(filter_kernel, sigma_color)
     segmentation = SegmentStage(10)
-    db = allidb.AllIdb()
+    database = allidb.AllIdb()
     feature_extract = HedHistHog()
 
-    framework = FusionFramework(db,
+    framework = FusionFramework(database,
                                 preprocessor,
                                 segmentation,
                                 feature_extract,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     image_lst, loc_lst, test_images, test_locs = allidb.load_train_test_data(ftrain,
                                                                              ftest,
-                                                                             db)
+                                                                             database)
 
     framework.train(image_lst, loc_lst, False)
 

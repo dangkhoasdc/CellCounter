@@ -12,7 +12,7 @@ import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
-from cellcounting.fw import globalfeature as fw
+from cellcounting.fw import GlobalFeatureFramework
 from cellcounting.features import hog, lbp
 from cellcounting.classifier import svm
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     lbp_feature = lbp.LBP()
     svm_clf = svm.SVM()
 
-    framework = fw.Framework(db,
+    framework = GlobalFeatureFramework(db,
                              preprocessor,
                              segmentation,
                              lbp_feature,

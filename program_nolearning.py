@@ -9,7 +9,7 @@ import argparse
 from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
-from cellcounting.fw import nolearning
+from cellcounting.fw import NoLearningFramework
 
 
 def run_program(ftrain, param, param2, viz):
@@ -29,7 +29,7 @@ def run_program(ftrain, param, param2, viz):
     seg = SegmentStage(10)
     db = allidb.AllIdb()
 
-    framework = nolearning.NoLearningFramework(db, pre, seg)
+    framework = NoLearningFramework(db, pre, seg)
 
     image_lst, loc_lst = allidb.load_data(ftrain, db.scale_ratio)
     num_true_items = sum([len(loc) for loc in loc_lst])
