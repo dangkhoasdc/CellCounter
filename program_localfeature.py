@@ -12,7 +12,7 @@ from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
 from cellcounting.fw import LocalFeatureFramework
-from cellcounting.features import sift
+from cellcounting.features import SIFTFeature
 from cellcounting.classifier import svm
 
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     preprocessor = HedBilateralFilter(filter_kernel, sigma_color)
     segmentation = SegmentStage(10)
     db = allidb.AllIdb()
-    sift_feature = sift.SIFTFeature()
+    sift_feature = SIFTFeature()
     svm_clf = svm.SVM()
     framework = LocalFeatureFramework(db,
                                       preprocessor,

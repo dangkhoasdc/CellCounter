@@ -12,7 +12,7 @@ from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
 from cellcounting.fw import FusionFramework
-from cellcounting.features.HedHistHog import HedHistHog
+from cellcounting.features import HedHistHog
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ from hed_bilateral import HedBilateralFilter
 from segment_hist import SegmentStage
 from cellcounting.db import allidb
 from cellcounting.fw import GlobalFeatureFramework
-from cellcounting.features import hog, lbp
+from cellcounting.features import HOGFeature, LBP
 from cellcounting.classifier import svm
 
 
@@ -30,8 +30,8 @@ if __name__ == '__main__':
     preprocessor = HedBilateralFilter(filter_kernel, sigma_color)
     segmentation = SegmentStage(10)
     db = allidb.AllIdb()
-    hog_feature = hog.HOGFeature()
-    lbp_feature = lbp.LBP()
+    hog_feature = HOGFeature()
+    lbp_feature = LBP()
     svm_clf = svm.SVM()
 
     framework = GlobalFeatureFramework(db,
